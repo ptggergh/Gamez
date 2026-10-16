@@ -30,5 +30,45 @@ function achievement(a){if(!state.achievements.includes(a)){state.achievements.p
 function startRace(i){if(raceState)return;const c=car(),event=CONFIG.events[i];raceState={i,event,x:0,speed:0,distance:0,enemy:0,enemyX:0.3,damage:0,boost:100,elapsed:0,paused:false,finished:false,roadside:[],last:performance.now()};$('race').style.display='block';for(let j=0;j<18;j++)raceState.roadside.push({z:j*220+150,x:(j%2?1:-1)*rnd(.75,1.4)});requestAnimationFrame(loop)}function finishRace(win){let r=raceState;if(!r||r.finished)return;r.finished=true;const c=car(),wear=clamp(1+r.damage*.1,1,14);c.components.tires=clamp(c.components.tires-wear,0,100);c.components.engine=clamp(c.components.engine-wear*.35,0,100);c.condition=Math.round(Object.values(c.components).reduce((a,b)=>a+b,0)/Object.keys(c.components).length);c.miles+=Math.round(r.event.distance/5280);if(win){state.cash+=r.event.prize;state.rep+=r.event.rep;state.stats.wins++;state.stats.earned+=r.event.prize;state.skills.driver++;achievement('First Victory')}else state.stats.losses++;advance();save();$('race').style.display='none';raceState=null;render();alert(`${win?'VICTORY!':'DEFEAT'}\n${r.event.name}\n${win?'Prize: '+money(r.event.prize)+' · +'+r.event.rep+' reputation':'Better luck next time.'}\nVehicle wear applied.`)}
 function loop(now){let r=raceState;if(!r||r.finished)return;let dt=clamp((now-r.last)/1000,0,.05);r.last=now;if(!r.paused){r.elapsed+=dt;const c=car(),power=hp(c),condition=clamp(c.components.engine/100,.25,1),max=clamp(70+power*.11,85,215);let gas=keys.w||keys.ArrowUp,brake=keys.s||keys.ArrowDown,steer=(keys.d||keys.ArrowRight?1:0)-(keys.a||keys.ArrowLeft?1:0);let boost=keys.Shift&&r.boost>0&&gas;r.speed=clamp(r.speed+(gas?(power/95)*condition*(boost?2.1:1):-.7)*dt*8-(brake?25*dt:0)-r.speed*.009*dt*8,0,max);if(boost)r.boost=clamp(r.boost-25*dt,0,100);else r.boost=clamp(r.boost+4*dt,0,100);r.x+=steer*dt*(.52+r.speed/115);if(Math.abs(r.x)>1.12){r.speed*=1-dt*2;r.damage+=dt*3;r.x=clamp(r.x,-1.4,1.4)}r.distance+=r.speed*1.467*dt;let enemySpeed=clamp((110+power*.025)*r.event.difficulty,72,185);r.enemy+=enemySpeed*1.467*dt;if(Math.abs(r.distance-r.enemy)<35&&Math.abs(r.x-r.enemyX)<.28&&r.elapsed>2){r.speed*=.985;r.damage+=dt*2}if(r.distance>=r.event.distance||r.enemy>=r.event.distance){finishRace(r.distance>=r.event.distance&&r.distance>=r.enemy);return}}drawRace(r);requestAnimationFrame(loop)}
 function drawRace(r){let canvas=$('raceCanvas'),w=canvas.width=innerWidth*devicePixelRatio,h=canvas.height=innerHeight*devicePixelRatio,ctx=canvas.getContext('2d');ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);w=innerWidth;h=innerHeight;ctx.fillStyle='#0b1720';ctx.fillRect(0,0,w,h);let mid=w/2,roadW=Math.min(w*.73,720),left=mid-roadW/2;ctx.fillStyle='#15212a';ctx.fillRect(left-110,0,roadW+220,h);ctx.fillStyle='#29343e';ctx.fillRect(left,0,roadW,h);ctx.fillStyle='#d8b45c';ctx.fillRect(left+7,0,5,h);ctx.fillRect(left+roadW-12,0,5,h);let offset=r.distance%130;ctx.fillStyle='#c7cdd8';for(let y=-130+offset;y<h+130;y+=130){for(let lane=1;lane<3;lane++)ctx.fillRect(left+roadW*lane/3-3,y,6,65)}for(let i=0;i<25;i++){let y=((i*89+r.distance*.8)%(h+120))-60;let x=left-50-(i%3)*12;ctx.fillStyle=i%4?'#1d3c36':'#54717c';ctx.beginPath();ctx.arc(x,y,15+i%3*6,0,7);ctx.fill();ctx.beginPath();ctx.arc(left+roadW+50+(i%3)*12,y,15+i%3*6,0,7);ctx.fill()}function topCar(x,y,col,enemy=false){ctx.save();ctx.translate(x,y);ctx.shadowColor=col;ctx.shadowBlur=12;ctx.fillStyle='#06090e';ctx.fillRect(-22,-39,44,85);ctx.fillStyle=col;ctx.beginPath();ctx.roundRect(-20,-42,40,82,9);ctx.fill();ctx.shadowBlur=0;ctx.fillStyle='#0a1d2d';ctx.fillRect(-16,-20,32,28);ctx.fillRect(-16,19,32,11);ctx.fillStyle=enemy?'#f04e43':'#fce4a8';ctx.fillRect(-17,enemy?35:-39,12,6);ctx.fillRect(5,enemy?35:-39,12,6);ctx.fillStyle='#05090d';ctx.fillRect(-25,-22,6,21);ctx.fillRect(19,-22,6,21);ctx.fillRect(-25,16,6,21);ctx.fillRect(19,16,6,21);ctx.restore()}let playerY=h*.72,enemyY=playerY+(r.distance-r.enemy)*.5;if(enemyY>-90&&enemyY<h+90)topCar(mid+r.enemyX*roadW*.32,enemyY,'#df5551',true);topCar(mid+r.x*roadW*.32,playerY,car().color);ctx.fillStyle='#fff';ctx.font='13px system-ui';ctx.fillText('FINISH',left+25,30);$('raceInfo').innerHTML=`<strong class="accent">${r.event.name.toUpperCase()}</strong><br>YOU ${Math.floor(r.distance)} / ${r.event.distance} FT<br>RIVAL ${Math.floor(r.enemy)} FT<br>${r.paused?'<strong>PAUSED · ESC TO RESUME</strong>':''}`;$('speed').textContent=Math.round(r.speed);$('gear').textContent='GEAR '+clamp(Math.floor(r.speed/35)+1,1,6);$('rpm').textContent=Math.round(1600+(r.speed%35)/35*5600);$('raceProgress').textContent=Math.floor(clamp(r.distance/r.event.distance,0,1)*100)+'% · BOOST '+Math.round(r.boost)+'%'}
-addEventListener('keydown',e=>{if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key))e.preventDefault();keys[e.key]=true;keys[e.key.toLowerCase()]=true;if(e.key==='Escape'&&raceState){raceState.paused=!raceState.paused;toast(raceState.paused?'Race paused':'Race resumed')}});addEventListener('keyup',e=>{keys[e.key]=false;keys[e.key.toLowerCase()]=false});addEventListener('blur',()=>{keys={};if(raceState)raceState.paused=true});function drawExtras(){if(screen==='Dyno')drawDyno()}const oldDraw=drawScenes;drawScenes=function(){oldDraw();drawExtras()};render();
+addEventListener('keydown',e=>{if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key))e.preventDefault();keys[e.key]=true;keys[e.key.toLowerCase()]=true;if(e.key==='Escape'&&raceState){raceState.paused=!raceState.paused;toast(raceState.paused?'Race paused':'Race resumed')}});addEventListener('keyup',e=>{keys[e.key]=false;keys[e.key.toLowerCase()]=false});addEventListener('blur',()=>{keys={};if(raceState)raceState.paused=true});function drawExtras(){if(screen==='Dyno')drawDyno()}
+const oldDraw=drawScenes;drawScenes=function(){oldDraw();drawExtras()};
+// Recover from incomplete/old saves rather than leaving the page blank.
+function validateSave(){
+ if(!state||typeof state!=='object'||!Array.isArray(state.cars)||!state.cars.length){state=initial();return}
+ const fresh=initial();
+ for(const k of ['stats','skills','settings'])state[k]={...fresh[k],...(state[k]&&typeof state[k]==='object'?state[k]:{})};
+ for(const k of ['ledger','achievements'])if(!Array.isArray(state[k]))state[k]=[];
+ if(!Array.isArray(state.market))state.market=[];
+ state.cash=Number.isFinite(state.cash)?Math.max(0,state.cash):2000;
+ state.rep=Number.isFinite(state.rep)?Math.max(0,state.rep):0;
+ state.day=Number.isFinite(state.day)?Math.max(1,state.day):1;
+ state.garage=Number.isInteger(state.garage)?clamp(state.garage,0,3):0;
+ state.cars=state.cars.filter(c=>c&&MODELS[c.model]).map(c=>{
+  c.parts=Array.isArray(c.parts)?c.parts.filter(id=>CONFIG.parts.some(p=>p.id===id)):[];
+  c.tune={boost:0,final:3.7,pressure:32,...(c.tune||{})};
+  c.components={...fresh.cars[0].components,...(c.components||{})};
+  c.color=/^#[0-9a-f]{6}$/i.test(c.color||'')?c.color:'#c34e43';
+  c.condition=clamp(Number(c.condition)||40,1,100);
+  return c;
+ });
+ if(!state.cars.length){state=initial();return}
+ if(!state.cars.some(c=>c.id===state.active))state.active=state.cars[0].id;
+ state.market=state.market.filter(l=>l&&l.car&&MODELS[l.car.model]&&Number.isFinite(l.price));
+ if(!state.market.length)refreshMarket();
+}
+function showStartupError(error){
+ console.error('STREETLINE startup error:',error);
+ const el=document.getElementById('view');
+ if(el)el.innerHTML='<div class="panel" style="max-width:800px;margin:32px auto"><h2 style="color:#ff9b42">STREETLINE COULD NOT START</h2><p>Something prevented the interface from loading. Your save has not been deleted.</p><pre id="startupDetails" style="white-space:pre-wrap;color:#ffc4a4"></pre><button id="retryGame">TRY AGAIN</button> <button id="recoverGame">BACK UP SAVE &amp; RESET</button></div>';
+ const details=document.getElementById('startupDetails');if(details)details.textContent=String(error?.stack||error);
+ document.getElementById('retryGame')?.addEventListener('click',()=>location.reload());
+ document.getElementById('recoverGame')?.addEventListener('click',()=>{
+  const raw=localStorage.getItem('streetline-save-v1');
+  if(raw){const blob=new Blob([raw],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='streetline-save-backup.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+  if(confirm('Backup downloaded. Reset STREETLINE save and reload?')){localStorage.removeItem('streetline-save-v1');location.reload()}
+ });
+}
+window.addEventListener('error',e=>{if(!document.getElementById('view')?.children.length)showStartupError(e.error||e.message)});
+try{validateSave();render();save()}catch(error){showStartupError(error)}
+
 </script></body></html>
