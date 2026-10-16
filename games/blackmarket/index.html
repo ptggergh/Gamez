@@ -1,1 +1,3509 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#080b13">
+<title>BLACKMARKET — Vantablack</title>
+<style>
+:root{
+  --bg:#080b13;
+  --panel:#101725;
+  --panel2:#151e2f;
+  --border:#273449;
+  --text:#e8f2ff;
+  --muted:#8394ab;
+  --cyan:#39e8f4;
+  --pink:#ff4caa;
+  --amber:#ffbd59;
+  --green:#48e6a2;
+  --red:#ff617b;
+  --purple:#ac85ff;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  background:
+    radial-gradient(ellipse at 80% -20%,#182346 0,transparent 55%),
+    radial-gradient(ellipse at 0 70%,#20122d 0,transparent 50%),
+    var(--bg);
+  color:var(--text);
+  font:14px/1.5 Inter,Segoe UI,Arial,sans-serif;
+  min-height:100vh;
+}
+body:after{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  background:repeating-linear-gradient(
+    to bottom,transparent 0px,transparent 3px,
+    rgba(0,0,0,.045) 4px
+  );
+  z-index:50;
+}
+button{
+  font:inherit;
+  cursor:pointer;
+  color:var(--text);
+  border:1px solid var(--border);
+  background:#1a2639;
+  border-radius:8px;
+  padding:9px 13px;
+  transition:.15s;
+}
+button:hover:not(:disabled){
+  border-color:var(--cyan);
+  background:#223650;
+}
+button:active:not(:disabled){transform:scale(.97)}
+button:disabled{opacity:.35;cursor:not-allowed}
+button:focus-visible{
+  outline:2px solid var(--cyan);
+  outline-offset:2px;
+}
+button.primary{
+  background:linear-gradient(135deg,#087f94,#12476e);
+  border-color:#22b5c9;
+}
+button.danger{border-color:#7d3046;color:#ff91a2}
+button.success{border-color:#227957;color:#78efbb}
+button.pink{border-color:#84376d;color:#ff8fd0}
+h1,h2,h3,p{margin-top:0}
+h1{font-size:25px;letter-spacing:3px;margin:0}
+h2{font-size:20px;letter-spacing:.5px}
+h3{font-size:15px}
+small,.muted{color:var(--muted)}
+strong{font-weight:700}
+.accent{color:var(--cyan)}
+.green{color:var(--green)}
+.red{color:var(--red)}
+.amber{color:var(--amber)}
+.pinktext{color:var(--pink)}
+.top{
+  position:sticky;
+  top:0;
+  z-index:30;
+  background:rgba(8,12,21,.96);
+  border-bottom:1px solid var(--border);
+  backdrop-filter:blur(14px);
+}
+.brandbar{
+  max-width:1550px;
+  margin:auto;
+  padding:14px 20px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  flex-wrap:wrap;
+}
+.logo span{color:var(--pink)}
+.subtitle{
+  color:var(--muted);
+  font-size:10px;
+  letter-spacing:2px;
+}
+.controls{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.controls button{padding:7px 11px}
+.controls button.selected{
+  border-color:var(--cyan);
+  color:var(--cyan);
+}
+.hud{
+  max-width:1550px;
+  margin:auto;
+  padding:0 20px 13px;
+  display:grid;
+  grid-template-columns:repeat(7,minmax(0,1fr));
+  gap:8px;
+}
+.stat{
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:9px;
+  padding:9px 11px;
+  min-width:0;
+}
+.stat label{
+  display:block;
+  color:var(--muted);
+  font-size:10px;
+  letter-spacing:1px;
+  text-transform:uppercase;
+}
+.stat b{
+  font-size:16px;
+  display:block;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.meter{
+  height:5px;
+  background:#293246;
+  border-radius:9px;
+  overflow:hidden;
+  margin-top:5px;
+}
+.meter div{
+  height:100%;
+  background:linear-gradient(90deg,var(--amber),var(--red));
+  transition:width .3s;
+}
+.shell{
+  max-width:1550px;
+  margin:auto;
+  padding:20px;
+  display:grid;
+  grid-template-columns:210px minmax(0,1fr);
+  gap:18px;
+}
+.sidebar{
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+  align-self:start;
+  position:sticky;
+  top:153px;
+}
+.nav{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  text-align:left;
+  width:100%;
+  padding:12px;
+  background:transparent;
+  border-color:transparent;
+  color:var(--muted);
+}
+.nav.active{
+  background:#132b3b;
+  color:var(--cyan);
+  border-color:#235b70;
+}
+.nav i{
+  font-size:18px;
+  font-style:normal;
+  width:23px;
+  text-align:center;
+}
+.sidebar-note{
+  margin-top:15px;
+  padding:14px;
+  border:1px solid var(--border);
+  border-radius:10px;
+  background:var(--panel);
+}
+.sidebar-note b{color:var(--amber)}
+main{min-width:0}
+.page{display:none}
+.page.active{display:block;animation:enter .2s ease}
+@keyframes enter{
+  from{opacity:.4;transform:translateY(5px)}
+  to{opacity:1;transform:translateY(0)}
+}
+.pagehead{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-end;
+  flex-wrap:wrap;
+  gap:10px;
+  margin-bottom:16px;
+}
+.pagehead h2{margin:0}
+.pagehead p{margin:3px 0 0;color:var(--muted)}
+.panel{
+  background:rgba(16,23,37,.94);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:18px;
+  margin-bottom:16px;
+}
+.panel-title{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  margin-bottom:14px;
+}
+.panel-title h3{margin:0}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(225px,1fr));
+  gap:12px;
+}
+.card{
+  border:1px solid var(--border);
+  border-radius:11px;
+  padding:15px;
+  background:var(--panel2);
+}
+.card h3{margin:0 0 5px}
+.card p{color:var(--muted);font-size:12px}
+.card .big{font-size:24px;font-weight:800}
+.row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:8px;
+}
+.wrap{flex-wrap:wrap}
+.gap{gap:8px}
+.actions{display:flex;gap:5px;flex-wrap:wrap}
+.actions button{padding:6px 9px;font-size:11px}
+.tablewrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:900px}
+th{
+  color:var(--muted);
+  font-size:10px;
+  text-transform:uppercase;
+  letter-spacing:1px;
+  text-align:left;
+  padding:12px 9px;
+  border-bottom:1px solid var(--border);
+}
+td{
+  padding:12px 9px;
+  border-bottom:1px solid #202b3b;
+  white-space:nowrap;
+}
+tbody tr:hover{background:#162438}
+.goodname{display:flex;align-items:center;gap:10px}
+.icon{
+  display:grid;
+  place-items:center;
+  width:36px;
+  height:36px;
+  background:#202d41;
+  border-radius:9px;
+  font-size:20px;
+}
+.tier{
+  font-size:10px;
+  padding:2px 7px;
+  border-radius:20px;
+  background:#263247;
+  color:#aebbd0;
+}
+.tier-1{color:#7de9c7}
+.tier-2{color:#72c6ff}
+.tier-3{color:#c9a2ff}
+.tier-4{color:#ffbf69}
+.spark{width:100px;height:32px;display:block}
+.district{
+  border-top:3px solid var(--district-color,var(--cyan));
+  cursor:pointer;
+  transition:transform .15s,border-color .15s;
+}
+.district:hover{transform:translateY(-2px)}
+.district.current{
+  box-shadow:inset 0 0 0 1px var(--district-color);
+}
+.district .emoji{font-size:28px}
+.dangerbar{display:flex;gap:3px}
+.dangerbar span{
+  height:6px;
+  width:18px;
+  border-radius:3px;
+  background:#30394b;
+}
+.dangerbar span.on{background:var(--red)}
+.kv{
+  display:flex;
+  justify-content:space-between;
+  border-bottom:1px solid #253044;
+  padding:8px 0;
+  gap:12px;
+}
+.kv:last-child{border:0}
+.log{
+  max-height:320px;
+  overflow:auto;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.logentry{
+  padding:10px 12px;
+  background:#172235;
+  border-left:3px solid var(--cyan);
+  border-radius:5px;
+  font-size:12px;
+}
+.logentry.event{border-color:var(--pink)}
+.logentry.bad{border-color:var(--red)}
+.logentry.good{border-color:var(--green)}
+.logentry small{display:block;margin-bottom:3px}
+canvas.chart{
+  width:100%;
+  height:220px;
+  display:block;
+}
+.achievement{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+.achievement .medal{font-size:29px;filter:grayscale(1);opacity:.35}
+.achievement.unlocked .medal{filter:none;opacity:1}
+.achievement:not(.unlocked){opacity:.62}
+#toastbox{
+  position:fixed;
+  right:16px;
+  bottom:16px;
+  z-index:90;
+  width:min(360px,calc(100vw - 32px));
+  display:flex;
+  flex-direction:column;
+  gap:9px;
+  pointer-events:none;
+}
+.toast{
+  background:#152439;
+  border:1px solid var(--cyan);
+  border-left:4px solid var(--cyan);
+  border-radius:9px;
+  padding:12px 15px;
+  box-shadow:0 10px 35px #0008;
+  animation:toastin .25s ease;
+}
+.toast.bad{border-color:var(--red)}
+.toast.good{border-color:var(--green)}
+.toast.event{border-color:var(--pink)}
+@keyframes toastin{
+  from{opacity:0;transform:translateX(25px)}
+  to{opacity:1;transform:translateX(0)}
+}
+.overlay{
+  position:fixed;
+  inset:0;
+  z-index:100;
+  background:#03050bdc;
+  backdrop-filter:blur(9px);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+}
+.overlay.hidden{display:none}
+.modal{
+  width:min(570px,100%);
+  max-height:90vh;
+  overflow:auto;
+  background:linear-gradient(145deg,#172238,#0e1422);
+  border:1px solid #3c5970;
+  box-shadow:0 0 80px #04c8e21b;
+  border-radius:16px;
+  padding:28px;
+}
+.modal h2{font-size:26px}
+.modal p{color:#b6c4d6}
+.modal .buttons{display:flex;gap:9px;flex-wrap:wrap;margin-top:20px}
+.modal .buttons button{flex:1;min-width:120px}
+.tag{
+  color:var(--cyan);
+  letter-spacing:2px;
+  font-size:10px;
+  font-weight:700;
+  text-transform:uppercase;
+}
+.flashup{animation:flashup .45s}
+.flashdown{animation:flashdown .45s}
+@keyframes flashup{50%{color:var(--green);text-shadow:0 0 12px var(--green)}}
+@keyframes flashdown{50%{color:var(--red);text-shadow:0 0 12px var(--red)}}
+.badge{
+  display:inline-block;
+  padding:3px 8px;
+  background:#203247;
+  border:1px solid #31465b;
+  border-radius:6px;
+  font-size:11px;
+}
+.progress{
+  height:9px;
+  background:#263246;
+  border-radius:10px;
+  overflow:hidden;
+}
+.progress>div{
+  height:100%;
+  background:linear-gradient(90deg,var(--cyan),var(--pink));
+}
+.empty{
+  text-align:center;
+  padding:35px 15px;
+  color:var(--muted);
+}
+.footer{
+  color:var(--muted);
+  text-align:center;
+  padding:15px;
+  font-size:11px;
+}
+@media(max-width:1150px){
+  .hud{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .sidebar{top:200px}
+}
+@media(max-width:760px){
+  .brandbar{padding:12px}
+  h1{font-size:20px}
+  .hud{padding:0 12px 12px;grid-template-columns:repeat(2,minmax(0,1fr))}
+  .stat b{font-size:14px}
+  .shell{display:block;padding:12px}
+  .sidebar{
+    position:static;
+    flex-direction:row;
+    overflow-x:auto;
+    padding-bottom:9px;
+    margin-bottom:12px;
+  }
+  .nav{
+    flex:0 0 auto;
+    width:auto;
+    padding:9px 11px;
+    gap:6px;
+    font-size:12px;
+  }
+  .nav i{width:auto}
+  .sidebar-note{display:none}
+  .panel{padding:13px}
+  .grid{grid-template-columns:repeat(auto-fit,minmax(160px,1fr))}
+  .modal{padding:20px}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*:before,*:after{
+    animation-duration:.01ms!important;
+    transition-duration:.01ms!important;
+  }
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="brandbar">
+    <div class="logo">
+      <h1>BLACK<span>MARKET</span></h1>
+      <div class="subtitle">VANTABLACK // UNDERGROUND EXCHANGE</div>
+    </div>
+    <div class="controls">
+      <button id="pauseBtn" class="primary">⏸ Pause</button>
+      <button data-speed="1" class="selected">1×</button>
+      <button data-speed="2">2×</button>
+      <button data-speed="4">4×</button>
+      <button id="muteBtn">🔊</button>
+      <button id="saveBtn">💾 Save</button>
+    </div>
+  </div>
+  <div class="hud">
+    <div class="stat"><label>Cash</label><b id="hudCash" class="green">$0</b></div>
+    <div class="stat"><label>Debt</label><b id="hudDebt" class="red">$0</b></div>
+    <div class="stat">
+      <label>Heat</label><b id="hudHeat">0%</b>
+      <div class="meter"><div id="heatFill"></div></div>
+    </div>
+    <div class="stat"><label>Day</label><b id="hudDay">1</b></div>
+    <div class="stat"><label>District</label><b id="hudDistrict">—</b></div>
+    <div class="stat"><label>Capacity</label><b id="hudCapacity">0 / 0</b></div>
+    <div class="stat"><label>Net Worth</label><b id="hudWorth" class="accent">$0</b></div>
+  </div>
+</header>
+
+<div class="shell">
+  <aside class="sidebar" id="sidebar">
+    <button class="nav active" data-tab="market"><i>📈</i> Market</button>
+    <button class="nav" data-tab="travel"><i>🗺️</i> Travel</button>
+    <button class="nav" data-tab="inventory"><i>📦</i> Inventory</button>
+    <button class="nav" data-tab="empire"><i>🏢</i> Empire</button>
+    <button class="nav" data-tab="crew"><i>👥</i> Crew</button>
+    <button class="nav" data-tab="skills"><i>🧠</i> Skills</button>
+    <button class="nav" data-tab="loans"><i>💳</i> Loans</button>
+    <button class="nav" data-tab="stats"><i>📊</i> Stats</button>
+    <button class="nav" data-tab="achievements"><i>🏆</i> Achievements</button>
+    <div class="sidebar-note">
+      <span class="tag">Objective</span>
+      <p style="margin:8px 0">
+        Become the <b>Kingpin of Vantablack</b>.
+      </p>
+      <strong id="goalText">$0 / $10M</strong>
+      <div class="progress" style="margin-top:9px">
+        <div id="goalFill" style="width:0%"></div>
+      </div>
+    </div>
+  </aside>
+
+  <main>
+    <section class="page active" id="page-market">
+      <div class="pagehead">
+        <div>
+          <h2>📈 Underground Exchange</h2>
+          <p id="marketSubtitle">Live prices in Vantablack.</p>
+        </div>
+        <div class="badge" id="marketStatus">MARKET OPEN</div>
+      </div>
+      <div class="panel">
+        <div class="panel-title">
+          <h3>Live Commodity Prices</h3>
+          <small>Buy at ask • Sell at bid</small>
+        </div>
+        <div class="tablewrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Commodity</th>
+                <th>Buy</th>
+                <th>Sell</th>
+                <th>Trend</th>
+                <th>History</th>
+                <th>Owned</th>
+                <th>Buy</th>
+                <th>Sell</th>
+              </tr>
+            </thead>
+            <tbody id="marketRows"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="grid">
+        <div class="panel">
+          <div class="panel-title"><h3>💡 Trading Intel</h3></div>
+          <div id="tradingIntel"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-title"><h3>📡 City Activity</h3></div>
+          <div id="recentLog" class="log"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="page" id="page-travel">
+      <div class="pagehead">
+        <div>
+          <h2>🗺️ District Network</h2>
+          <p>Every district has different supply, demand, and danger.</p>
+        </div>
+      </div>
+      <div id="districtGrid" class="grid"></div>
+      <div class="panel" style="margin-top:16px">
+        <h3>District Reputation</h3>
+        <div id="reputationList"></div>
+      </div>
+    </section>
+
+    <section class="page" id="page-inventory">
+      <div class="pagehead">
+        <div>
+          <h2>📦 Your Stash</h2>
+          <p>All goods currently in your possession.</p>
+        </div>
+      </div>
+      <div class="grid" id="inventorySummary"></div>
+      <div class="panel" style="margin-top:16px">
+        <div id="inventoryList"></div>
+      </div>
+    </section>
+
+    <section class="page" id="page-empire">
+      <div class="pagehead">
+        <div>
+          <h2>🏢 Business Empire</h2>
+          <p>Invest your profits into permanent income-producing assets.</p>
+        </div>
+      </div>
+      <div id="empireSummary" class="grid"></div>
+      <div id="businessGrid" class="grid" style="margin-top:16px"></div>
+    </section>
+
+    <section class="page" id="page-crew">
+      <div class="pagehead">
+        <div>
+          <h2>👥 Your Crew</h2>
+          <p>Employees provide bonuses but collect wages every day.</p>
+        </div>
+      </div>
+      <div id="crewSummary" class="panel"></div>
+      <div id="crewGrid" class="grid"></div>
+    </section>
+
+    <section class="page" id="page-skills">
+      <div class="pagehead">
+        <div>
+          <h2>🧠 Street Skills</h2>
+          <p>Permanent upgrades for your current syndicate.</p>
+        </div>
+      </div>
+      <div id="skillGrid" class="grid"></div>
+    </section>
+
+    <section class="page" id="page-loans">
+      <div class="pagehead">
+        <div>
+          <h2>💳 Underground Finance</h2>
+          <p>Borrow capital, manage debt, and keep the inspectors away.</p>
+        </div>
+      </div>
+      <div id="loanPanel"></div>
+      <div class="panel">
+        <h3>🕶️ Fixer Services</h3>
+        <p class="muted">Pay a local fixer to reduce your Heat immediately.</p>
+        <div id="fixerPanel"></div>
+      </div>
+    </section>
+
+    <section class="page" id="page-stats">
+      <div class="pagehead">
+        <div>
+          <h2>📊 Syndicate Analytics</h2>
+          <p>Track your progress from street merchant to Kingpin.</p>
+        </div>
+      </div>
+      <div id="statsGrid" class="grid"></div>
+      <div class="panel" style="margin-top:16px">
+        <div class="panel-title">
+          <h3>Net Worth History</h3>
+          <small>Cash + goods + businesses − debt</small>
+        </div>
+        <canvas class="chart" id="worthChart"></canvas>
+      </div>
+      <div class="panel">
+        <h3>Event Log</h3>
+        <div class="log" id="fullLog"></div>
+      </div>
+      <div class="panel">
+        <h3>Save Management</h3>
+        <div class="actions">
+          <button data-action="save">💾 Save Now</button>
+          <button data-action="tutorial">❔ Tutorial</button>
+          <button data-action="reset" class="danger">🗑 Reset Save</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="page" id="page-achievements">
+      <div class="pagehead">
+        <div>
+          <h2>🏆 Achievements</h2>
+          <p>Build your reputation across Vantablack.</p>
+        </div>
+      </div>
+      <div class="panel" id="achievementProgress"></div>
+      <div class="grid" id="achievementGrid"></div>
+    </section>
+  </main>
+</div>
+
+<div class="footer">
+  BLACKMARKET // VANTABLACK EXCHANGE // LOCAL SAVE SYSTEM
+</div>
+
+<div id="toastbox" aria-live="polite"></div>
+
+<div class="overlay hidden" id="overlay">
+  <div class="modal" id="modalContent"></div>
+</div>
+
+<script>
+"use strict";
+
+/* ==========================================================
+   BLACKMARKET — GAME CONFIGURATION
+   Change the values in CONFIG to rebalance the game.
+   All goods, districts, events, and upgrades are defined here.
+========================================================== */
+
+const CONFIG = {
+  saveKey:"blackmarket_vantablack_v1",
+  dayMs:8000,
+  autosaveMs:10000,
+  goal:10000000,
+  startingCash:1250,
+  startingCapacity:30,
+  maxHistory:70,
+  travelBase:175,
+  interestRate:.012,
+  loanTerm:28,
+  baseHeatDecay:2.5,
+  encounterHeat:55,
+  prestigeLuck:.045,
+  goods:[
+    {id:"ghost",name:"Ghost Chips",icon:"💾",base:240,vol:.17,tier:2},
+    {id:"tonic",name:"Neon Tonic",icon:"🧃",base:38,vol:.22,tier:1},
+    {id:"silk",name:"Void Silk",icon:"🧵",base:420,vol:.15,tier:2},
+    {id:"relic",name:"Rust Relics",icon:"⚙️",base:85,vol:.19,tier:1},
+    {id:"cells",name:"Pulse Cells",icon:"🔋",base:310,vol:.2,tier:2},
+    {id:"dust",name:"Mirage Dust",icon:"✨",base:980,vol:.24,tier:3},
+    {id:"keys",name:"Cipher Keys",icon:"🗝️",base:1450,vol:.23,tier:3},
+    {id:"fuel",name:"Moonshine Fuel",icon:"🛢️",base:160,vol:.16,tier:1},
+    {id:"pearls",name:"Phantom Pearls",icon:"🫧",base:3100,vol:.2,tier:4},
+    {id:"bloom",name:"Static Bloom",icon:"🌺",base:580,vol:.21,tier:2},
+    {id:"glass",name:"Echo Glass",icon:"🔮",base:1850,vol:.18,tier:3},
+    {id:"amber",name:"Dark Amber",icon:"🟠",base:5300,vol:.16,tier:4}
+  ],
+  districts:[
+    {
+      id:"docks",name:"Neon Docks",icon:"🚢",color:"#32e8f3",
+      danger:2,travel:1,fee:0,
+      cheap:["tonic","fuel","cells"],
+      premium:["silk","pearls","glass"],
+      description:"Cargo ships, glowing water, and cheap imported supplies."
+    },
+    {
+      id:"alley",name:"Rust Alley",icon:"🏚️",color:"#ef985a",
+      danger:3,travel:1,fee:100,
+      cheap:["relic","ghost","amber"],
+      premium:["fuel","keys","bloom"],
+      description:"Scrapyards and hidden workshops behind rusted shutters."
+    },
+    {
+      id:"chrome",name:"Chrome Heights",icon:"🏙️",color:"#bba4ff",
+      danger:2,travel:2,fee:340,
+      cheap:["silk","glass","bloom"],
+      premium:["ghost","tonic","amber"],
+      description:"The wealthy district. Luxury goods move quickly here."
+    },
+    {
+      id:"under",name:"The Undercroft",icon:"🕳️",color:"#ed66b4",
+      danger:5,travel:2,fee:420,
+      cheap:["dust","keys","pearls"],
+      premium:["cells","relic","silk"],
+      description:"A labyrinth of tunnels with excellent deals and serious danger."
+    },
+    {
+      id:"smog",name:"Smog Market",icon:"🏭",color:"#b9b46a",
+      danger:3,travel:1,fee:180,
+      cheap:["fuel","relic","cells"],
+      premium:["dust","glass","tonic"],
+      description:"Factories, crowded bazaars, and industrial trade."
+    },
+    {
+      id:"spire",name:"Glass Spire",icon:"💎",color:"#7fbfff",
+      danger:4,travel:2,fee:650,
+      cheap:["amber","pearls","glass"],
+      premium:["keys","ghost","dust"],
+      description:"Elite buyers pay top prices for rare commodities."
+    }
+  ],
+  businesses:[
+    {id:"laundry",name:"Laundromat",icon:"🧺",base:3500,income:85,max:8,desc:"Reliable daily income."},
+    {id:"club",name:"Night Club",icon:"🎵",base:12500,income:350,max:8,desc:"High-margin entertainment venue."},
+    {id:"tunnel",name:"Smuggling Tunnel",icon:"🚇",base:35000,income:900,max:8,desc:"Income plus cheaper travel."},
+    {id:"hacker",name:"Hacker Den",icon:"💻",base:85000,income:2300,max:8,desc:"Tech operations and better market information."},
+    {id:"warehouse",name:"Warehouse",icon:"🏬",base:18000,income:0,max:8,desc:"+70 inventory capacity per level."},
+    {id:"safehouse",name:"Safehouse",icon:"🏠",base:22000,income:0,max:8,desc:"Reduces Heat every day."}
+  ],
+  crew:[
+    {id:"runner",name:"Runners",icon:"🏃",hire:3000,wage:38,max:15,desc:"Automatically trade small quantities each day."},
+    {id:"lookout",name:"Lookouts",icon:"👁️",hire:4500,wage:50,max:12,desc:"Reduce Heat and inspector risk."},
+    {id:"muscle",name:"Muscle",icon:"💪",hire:6500,wage:75,max:12,desc:"Improve your chances in inspector encounters."},
+    {id:"accountant",name:"Accountants",icon:"📒",hire:9500,wage:105,max:10,desc:"Improve your selling prices."}
+  ],
+  skills:[
+    {id:"haggle",name:"Haggling",icon:"💬",base:1500,max:10,desc:"Buy cheaper and sell for more."},
+    {id:"stealth",name:"Stealth",icon:"🥷",base:2200,max:10,desc:"Generate less Heat from trades."},
+    {id:"back",name:"Strong Back",icon:"🎒",base:1250,max:10,desc:"+20 carrying capacity per level."},
+    {id:"smarts",name:"Street Smarts",icon:"🧠",base:2800,max:5,desc:"See increasingly accurate price forecasts."}
+  ]
+};
+
+/* ==========================================================
+   UTILITY FUNCTIONS
+========================================================== */
+
+const $=id=>document.getElementById(id);
+const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
+const rand=(min,max)=>Math.random()*(max-min)+min;
+const pick=arr=>arr[Math.floor(Math.random()*arr.length)];
+const int=v=>Math.floor(Math.max(0,Number(v)||0));
+
+function fmt(n){
+  if(!Number.isFinite(n))return "0";
+  const abs=Math.abs(n);
+  const sign=n<0?"-":"";
+  if(abs>=1e12)return sign+(abs/1e12).toFixed(2)+"T";
+  if(abs>=1e9)return sign+(abs/1e9).toFixed(2)+"B";
+  if(abs>=1e6)return sign+(abs/1e6).toFixed(2)+"M";
+  if(abs>=1e3)return sign+(abs/1e3).toFixed(1)+"K";
+  return sign+Math.round(abs).toLocaleString();
+}
+function money(n){return "$"+fmt(n)}
+function preciseMoney(n){
+  return "$"+Math.round(n).toLocaleString("en-US");
+}
+function escapeHTML(s){
+  return String(s).replace(/[&<>"']/g,c=>({
+    "&":"&amp;","<":"&lt;",">":"&gt;",
+    '"':"&quot;","'":"&#39;"
+  }[c]));
+}
+function getGood(id){return CONFIG.goods.find(g=>g.id===id)}
+function getDistrict(id){return CONFIG.districts.find(d=>d.id===id)}
+function getBusiness(id){return CONFIG.businesses.find(b=>b.id===id)}
+function getCrew(id){return CONFIG.crew.find(c=>c.id===id)}
+function getSkill(id){return CONFIG.skills.find(s=>s.id===id)}
+
+/* ==========================================================
+   SAVE DATA
+========================================================== */
+
+function newGame(prestige=0,muted=false){
+  const inventory={};
+  const prices={};
+  const history={};
+  const businesses={};
+  const crew={};
+  const skills={};
+  const reputation={};
+
+  CONFIG.goods.forEach(g=>{
+    inventory[g.id]=0;
+    prices[g.id]=g.base*rand(.88,1.12);
+    history[g.id]=[prices[g.id]];
+  });
+
+  CONFIG.businesses.forEach(b=>businesses[b.id]=0);
+  CONFIG.crew.forEach(c=>crew[c.id]=0);
+  CONFIG.skills.forEach(s=>skills[s.id]=0);
+  CONFIG.districts.forEach(d=>reputation[d.id]=0);
+
+  inventory.tonic=4;
+  inventory.relic=2;
+
+  return {
+    version:1,
+    cash:CONFIG.startingCash+prestige*500,
+    inventory,prices,history,businesses,crew,skills,reputation,
+    district:"docks",
+    day:1,
+    heat:0,
+    debt:0,
+    loanDue:0,
+    loanPenaltyDay:0,
+    prestige,
+    muted,
+    speed:1,
+    paused:false,
+    gameOver:false,
+    won:false,
+    victoryShown:false,
+    encounter:null,
+    eventModifiers:{},
+    achievements:[],
+    log:[],
+    worthHistory:[],
+    stats:{
+      trades:0,
+      totalProfit:0,
+      bestTrade:0,
+      grossSales:0,
+      totalBought:0,
+      inspectors:0,
+      survived:0,
+      loansPaid:0,
+      daysTraveled:0,
+      districtsVisited:["docks"],
+      largestCash:0,
+      totalEvents:0
+    }
+  };
+}
+
+function safeNumber(v,def=0,min=0,max=1e15){
+  const n=Number(v);
+  return Number.isFinite(n)?clamp(n,min,max):def;
+}
+
+function validateSave(raw){
+  if(!raw||typeof raw!=="object"||Array.isArray(raw)){
+    throw Error("Invalid save");
+  }
+  const p=safeNumber(raw.prestige,0,0,1000);
+  const s=newGame(p,Boolean(raw.muted));
+
+  for(const k of ["cash","heat","debt"]){
+    s[k]=safeNumber(raw[k],s[k],0,k==="heat"?100:1e15);
+  }
+
+  for(const k of [
+    "day","loanDue","loanPenaltyDay","prestige"
+  ]){
+    s[k]=int(safeNumber(raw[k],s[k],0,1e9));
+  }
+
+  for(const key of ["inventory","businesses","crew","skills","reputation"]){
+    if(!raw[key]||typeof raw[key]!=="object")continue;
+    for(const id of Object.keys(s[key])){
+      const max=key==="inventory"?1e8:
+        key==="reputation"?100:
+        key==="businesses"?getBusiness(id).max:
+        key==="crew"?getCrew(id).max:
+        getSkill(id).max;
+
+      s[key][id]=int(safeNumber(raw[key][id],s[key][id],0,max));
+    }
+  }
+
+  for(const g of CONFIG.goods){
+    s.prices[g.id]=safeNumber(
+      raw.prices?.[g.id],g.base,g.base*.15,g.base*8
+    );
+
+    const h=raw.history?.[g.id];
+    if(Array.isArray(h)){
+      s.history[g.id]=h.slice(-CONFIG.maxHistory)
+        .map(x=>safeNumber(x,g.base,g.base*.15,g.base*8));
+      if(!s.history[g.id].length)s.history[g.id]=[s.prices[g.id]];
+    }
+  }
+
+  if(getDistrict(raw.district))s.district=raw.district;
+
+  s.speed=[1,2,4].includes(raw.speed)?raw.speed:1;
+  s.paused=Boolean(raw.paused);
+  s.won=Boolean(raw.won);
+  s.victoryShown=Boolean(raw.victoryShown);
+  s.gameOver=Boolean(raw.gameOver);
+
+  if(Array.isArray(raw.achievements)){
+    s.achievements=raw.achievements.filter(x=>
+      typeof x==="string"&&ACHIEVEMENTS.some(a=>a.id===x)
+    );
+  }
+
+  if(Array.isArray(raw.log)){
+    s.log=raw.log.slice(0,70).filter(x=>
+      x&&typeof x.text==="string"
+    ).map(x=>({
+      day:int(x.day),
+      text:x.text.slice(0,300),
+      type:["event","bad","good",""].includes(x.type)?x.type:""
+    }));
+  }
+
+  if(Array.isArray(raw.worthHistory)){
+    s.worthHistory=raw.worthHistory.slice(-CONFIG.maxHistory)
+      .filter(x=>x&&typeof x==="object")
+      .map(x=>({
+        day:int(x.day),
+        cash:safeNumber(x.cash),
+        inventory:safeNumber(x.inventory),
+        assets:safeNumber(x.assets),
+        debt:safeNumber(x.debt)
+      }));
+  }
+
+  if(raw.stats&&typeof raw.stats==="object"){
+    for(const k of Object.keys(s.stats)){
+      if(k==="districtsVisited"){
+        if(Array.isArray(raw.stats[k])){
+          s.stats[k]=[...new Set(raw.stats[k]
+            .filter(x=>Boolean(getDistrict(x))))];
+        }
+      }else{
+        s.stats[k]=safeNumber(raw.stats[k],0,0,1e15);
+      }
+    }
+  }
+
+  if(raw.eventModifiers&&typeof raw.eventModifiers==="object"){
+    for(const g of CONFIG.goods){
+      const m=raw.eventModifiers[g.id];
+      if(m&&typeof m==="object"){
+        const until=int(safeNumber(m.until,0,0,1e9));
+        if(until>=s.day&&until<=s.day+30){
+          s.eventModifiers[g.id]={
+            mult:safeNumber(m.mult,1,.3,4),
+            until
+          };
+        }
+      }
+    }
+  }
+
+  s.encounter=null;
+  s.stats.districtsVisited=[
+    ...new Set([...s.stats.districtsVisited,s.district])
+  ];
+
+  return s;
+}
+
+let state;
+let currentTab="market";
+let dayProgress=0;
+let lastFrame=performance.now();
+let lastSave=Date.now();
+let audioContext=null;
+let modalType=null;
+let pendingTravel=null;
+let inputLocked=false;
+
+function saveGame(silent=false){
+  try{
+    localStorage.setItem(CONFIG.saveKey,JSON.stringify(state));
+    lastSave=Date.now();
+    if(!silent)toast("Game saved successfully.","good");
+  }catch(e){
+    if(!silent)toast("Unable to save. Browser storage may be full.","bad");
+  }
+}
+
+function loadGame(){
+  try{
+    const raw=localStorage.getItem(CONFIG.saveKey);
+    if(!raw)return null;
+    return validateSave(JSON.parse(raw));
+  }catch(e){
+    console.warn("Save recovery:",e);
+    toast("Save data was damaged. Started a fresh game.","bad");
+    return null;
+  }
+}
+
+/* ==========================================================
+   SOUND ENGINE
+========================================================== */
+
+function sound(type){
+  if(state.muted)return;
+  try{
+    const AC=window.AudioContext||window.webkitAudioContext;
+    if(!AC)return;
+    if(!audioContext)audioContext=new AC();
+    if(audioContext.state==="suspended")audioContext.resume();
+
+    const now=audioContext.currentTime;
+    const notes={
+      buy:[420,540],
+      sell:[550,800],
+      event:[280,360,230],
+      alert:[600,320,600],
+      achievement:[540,680,840,1040],
+      click:[440]
+    }[type]||[440];
+
+    notes.forEach((freq,i)=>{
+      const osc=audioContext.createOscillator();
+      const gain=audioContext.createGain();
+      const t=now+i*.075;
+      osc.type=type==="alert"?"sawtooth":"sine";
+      osc.frequency.setValueAtTime(freq,t);
+      gain.gain.setValueAtTime(.0001,t);
+      gain.gain.exponentialRampToValueAtTime(.055,t+.012);
+      gain.gain.exponentialRampToValueAtTime(.0001,t+.12);
+      osc.connect(gain);
+      gain.connect(audioContext.destination);
+      osc.start(t);
+      osc.stop(t+.13);
+    });
+  }catch(e){}
+}
+
+/* ==========================================================
+   ECONOMY
+========================================================== */
+
+function districtModifier(goodId,districtId){
+  const d=getDistrict(districtId);
+  const g=getGood(goodId);
+  let mod=1;
+
+  if(d.cheap.includes(goodId))mod*=.69;
+  if(d.premium.includes(goodId))mod*=1.38;
+
+  const rep=state.reputation[districtId]||0;
+  mod*=1-rep*.00045;
+
+  // Small deterministic per-district/per-good differences.
+  const hash=[...goodId+districtId]
+    .reduce((n,c)=>n*31+c.charCodeAt(0),7);
+
+  mod*=.94+(Math.abs(hash)%13)/100;
+
+  if(g.tier===4&&rep<15&&districtId==="under"){
+    mod*=1.04;
+  }
+
+  return mod;
+}
+
+function eventMultiplier(goodId){
+  const m=state.eventModifiers[goodId];
+  return m&&m.until>=state.day?m.mult:1;
+}
+
+function localPrice(goodId,districtId=state.district){
+  const g=getGood(goodId);
+  return Math.max(1,Math.round(
+    state.prices[goodId]*
+    districtModifier(goodId,districtId)*
+    eventMultiplier(goodId)
+  ));
+}
+
+function buyPrice(id){
+  const h=state.skills.haggle;
+  const rep=state.reputation[state.district];
+  const discount=h*.012+rep*.0006;
+  return Math.max(1,Math.ceil(localPrice(id)*(1.075-discount)));
+}
+
+function sellPrice(id){
+  const h=state.skills.haggle;
+  const a=state.crew.accountant;
+  const rep=state.reputation[state.district];
+  const bonus=h*.012+a*.007+rep*.00055;
+  return Math.max(1,Math.floor(localPrice(id)*(.925+bonus)));
+}
+
+function capacity(){
+  return CONFIG.startingCapacity+
+    state.skills.back*20+
+    state.businesses.warehouse*70;
+}
+
+function inventoryCount(){
+  return CONFIG.goods.reduce((n,g)=>n+state.inventory[g.id],0);
+}
+
+function inventoryValue(){
+  return CONFIG.goods.reduce(
+    (n,g)=>n+state.inventory[g.id]*sellPrice(g.id),0
+  );
+}
+
+function assetValue(){
+  return CONFIG.businesses.reduce((sum,b)=>{
+    let value=0;
+    for(let level=0;level<state.businesses[b.id];level++){
+      value+=businessCost(b,level)*.75;
+    }
+    return sum+value;
+  },0);
+}
+
+function netWorth(){
+  return state.cash+inventoryValue()+assetValue()-state.debt;
+}
+
+function dailyIncome(){
+  return CONFIG.businesses.reduce(
+    (n,b)=>n+state.businesses[b.id]*b.income*
+      (1+state.prestige*.05),0
+  );
+}
+
+function dailyWages(){
+  return CONFIG.crew.reduce(
+    (n,c)=>n+state.crew[c.id]*c.wage,0
+  );
+}
+
+function changeCash(amount){
+  state.cash=clamp(state.cash+amount,0,1e15);
+}
+
+function addHeat(amount){
+  const stealth=1-state.skills.stealth*.065;
+  const lookout=1-state.crew.lookout*.025;
+  state.heat=clamp(
+    state.heat+amount*stealth*lookout,0,100
+  );
+}
+
+function gainRep(amount=1){
+  state.reputation[state.district]=clamp(
+    state.reputation[state.district]+amount,0,100
+  );
+}
+
+function canTrade(){
+  if(state.gameOver)return false;
+  if(state.encounter){
+    toast("Resolve the inspector encounter first.","bad");
+    return false;
+  }
+  return true;
+}
+
+function trade(id,side,amount){
+  if(inputLocked||!canTrade())return;
+  const g=getGood(id);
+  if(!g)return;
+
+  const owned=state.inventory[id];
+  const free=capacity()-inventoryCount();
+
+  let qty=amount==="max"?
+    (side==="buy"?
+      Math.min(free,Math.floor(state.cash/buyPrice(id))):
+      owned):
+    int(amount);
+
+  if(side==="buy"){
+    qty=Math.min(qty,free,Math.floor(state.cash/buyPrice(id)));
+  }else{
+    qty=Math.min(qty,owned);
+  }
+
+  if(qty<=0){
+    toast(side==="buy"?
+      "Not enough cash or storage space.":
+      "You don't own any of that commodity.","bad");
+    return;
+  }
+
+  const unit=side==="buy"?buyPrice(id):sellPrice(id);
+  const total=unit*qty;
+
+  if(side==="buy"){
+    changeCash(-total);
+    state.inventory[id]+=qty;
+    state.stats.totalBought+=total;
+    sound("buy");
+  }else{
+    state.inventory[id]-=qty;
+    changeCash(total);
+    state.stats.grossSales+=total;
+    sound("sell");
+  }
+
+  state.stats.trades++;
+  gainRep(Math.max(.12,Math.min(2,qty*.08)));
+
+  if(side==="sell"){
+    const baseline=g.base*qty;
+    const profit=total-baseline;
+    state.stats.totalProfit+=profit;
+    state.stats.bestTrade=Math.max(
+      state.stats.bestTrade,profit
+    );
+  }
+
+  addHeat(
+    (side==="buy"?1.3:1.8)+
+    qty*.12+
+    g.tier*.35
+  );
+
+  logEvent(
+    `${side==="buy"?"Bought":"Sold"} ${qty} ${g.name} for ${money(total)}.`,
+    side==="sell"?"good":""
+  );
+
+  checkAchievements();
+  checkWin();
+  render();
+}
+
+/* ==========================================================
+   MARKET SIMULATION
+========================================================== */
+
+function updatePrices(){
+  for(const g of CONFIG.goods){
+    const old=state.prices[g.id];
+
+    // Mean reversion plus random walk.
+    const target=g.base;
+    const revert=(target-old)*.065;
+    const shock=rand(-1,1)*g.vol*old*.48;
+    const prestigeVol=1+state.prestige*.08;
+
+    let next=old+revert+shock*prestigeVol;
+    next=clamp(next,g.base*.22,g.base*4.5);
+
+    state.prices[g.id]=next;
+    state.history[g.id].push(next);
+
+    if(state.history[g.id].length>CONFIG.maxHistory){
+      state.history[g.id].shift();
+    }
+  }
+
+  for(const id of Object.keys(state.eventModifiers)){
+    if(state.eventModifiers[id].until<state.day){
+      delete state.eventModifiers[id];
+    }
+  }
+}
+
+function forecast(id){
+  const level=state.skills.smarts;
+  if(!level)return "🔒 Unlock Street Smarts";
+
+  const g=getGood(id);
+  const current=state.prices[id];
+  const pull=(g.base-current)/current;
+
+  const last=state.history[id];
+  const momentum=last.length>2?
+    (last[last.length-1]-last[last.length-2])/
+    last[last.length-2]:0;
+
+  const signal=pull*.7+momentum*.15;
+  const uncertainty=(6-level)*.025;
+
+  if(Math.abs(signal)<uncertainty){
+    return "↔ Uncertain";
+  }
+
+  return signal>0?"↗ Likely rising":"↘ Likely falling";
+}
+
+/* ==========================================================
+   RANDOM EVENTS
+   All goods and events are fictional.
+========================================================== */
+
+const EVENTS=[
+  {
+    title:"Police Crackdown",
+    text:"Inspectors have restricted Ghost Chip shipments.",
+    type:"market",good:"ghost",mult:3,duration:4
+  },
+  {
+    title:"Warehouse Fire",
+    text:"Void Silk shipments were destroyed in a warehouse fire.",
+    type:"market",good:"silk",mult:2.4,duration:5
+  },
+  {
+    title:"Tourist Festival",
+    text:"Visitors are buying Neon Tonic by the crate.",
+    type:"market",good:"tonic",mult:2.6,duration:4
+  },
+  {
+    title:"Energy Shortage",
+    text:"Pulse Cell demand is soaring.",
+    type:"market",good:"cells",mult:2.1,duration:5
+  },
+  {
+    title:"Hologram Craze",
+    text:"Mirage Dust is suddenly fashionable.",
+    type:"market",good:"dust",mult:2.2,duration:4
+  },
+  {
+    title:"Data Leak",
+    text:"Cipher Keys are in high demand.",
+    type:"market",good:"keys",mult:2.3,duration:5
+  },
+  {
+    title:"Fuel Surplus",
+    text:"Moonshine Fuel prices have collapsed.",
+    type:"market",good:"fuel",mult:.45,duration:4
+  },
+  {
+    title:"Pearl Auction",
+    text:"Collectors are paying fortunes for Phantom Pearls.",
+    type:"market",good:"pearls",mult:2.5,duration:3
+  },
+  {
+    title:"Flower Parade",
+    text:"Static Bloom demand has exploded.",
+    type:"market",good:"bloom",mult:2.1,duration:4
+  },
+  {
+    title:"Glass Shortage",
+    text:"Echo Glass production has stalled.",
+    type:"market",good:"glass",mult:2.2,duration:5
+  },
+  {
+    title:"Amber Discovery",
+    text:"A massive Dark Amber deposit has flooded the market.",
+    type:"market",good:"amber",mult:.5,duration:5
+  },
+  {
+    title:"Scrap Boom",
+    text:"Rust Relics are suddenly valuable to collectors.",
+    type:"market",good:"relic",mult:2.7,duration:4
+  },
+  {
+    title:"Rival Crew Raid",
+    text:"A rival crew has raided part of your stash.",
+    type:"raid"
+  },
+  {
+    title:"Lucky Find",
+    text:"You discovered an abandoned shipment.",
+    type:"find"
+  },
+  {
+    title:"Street Sweep",
+    text:"Inspectors are conducting surprise searches.",
+    type:"heat"
+  },
+  {
+    title:"Quiet Night",
+    text:"The streets are unusually calm.",
+    type:"cool"
+  },
+  {
+    title:"Business Boom",
+    text:"Your business network has an exceptionally profitable day.",
+    type:"bonus"
+  },
+  {
+    title:"Anonymous Tip",
+    text:"A mysterious contact has paid you for market information.",
+    type:"cash"
+  }
+];
+
+function triggerEvent(){
+  const e=pick(EVENTS);
+  state.stats.totalEvents++;
+
+  let description=e.text;
+  let bad=false;
+
+  if(e.type==="market"){
+    state.eventModifiers[e.good]={
+      mult:e.mult,
+      until:state.day+e.duration
+    };
+    description+=` ${getGood(e.good).name} prices are now ${
+      e.mult>1?"higher":"lower"
+    } for ${e.duration} days.`;
+  }
+
+  if(e.type==="raid"){
+    const owned=CONFIG.goods.filter(g=>state.inventory[g.id]>0);
+    if(owned.length){
+      const g=pick(owned);
+      const lost=Math.max(1,Math.ceil(state.inventory[g.id]*.2));
+      state.inventory[g.id]-=lost;
+      description+=` Lost ${lost} ${g.name}.`;
+      bad=true;
+    }else{
+      description+=" Your empty stash was untouched.";
+    }
+  }
+
+  if(e.type==="find"){
+    const available=CONFIG.goods.filter(g=>
+      g.tier<=2||state.reputation[state.district]>=25
+    );
+    const g=pick(available);
+    const qty=Math.min(
+      capacity()-inventoryCount(),
+      Math.max(1,Math.floor(rand(2,8)))
+    );
+    if(qty>0){
+      state.inventory[g.id]+=qty;
+      description+=` Found ${qty} ${g.name}.`;
+    }else{
+      description+=" Your stash was too full to collect it.";
+    }
+  }
+
+  if(e.type==="heat"){
+    addHeat(12);
+    bad=true;
+  }
+
+  if(e.type==="cool"){
+    state.heat=clamp(state.heat-14,0,100);
+  }
+
+  if(e.type==="bonus"){
+    const reward=Math.max(100,Math.round(dailyIncome()*1.7));
+    changeCash(reward);
+    description+=` Earned ${money(reward)}.`;
+  }
+
+  if(e.type==="cash"){
+    const reward=Math.round(rand(100,700)*(1+state.day*.015));
+    changeCash(reward);
+    description+=` Received ${money(reward)}.`;
+  }
+
+  logEvent(`${e.title}: ${description}`,bad?"bad":"event");
+  toast(`📡 ${e.title}: ${description}`,bad?"bad":"event");
+  sound("event");
+}
+
+/* ==========================================================
+   BUSINESSES, CREW, SKILLS
+========================================================== */
+
+function businessCost(b,level=state.businesses[b.id]){
+  return Math.round(b.base*Math.pow(1.75,level)*
+    (1+state.prestige*.12));
+}
+
+function crewCost(c){
+  return Math.round(c.hire*Math.pow(1.38,state.crew[c.id])*
+    (1+state.prestige*.1));
+}
+
+function skillCost(s){
+  return Math.round(s.base*Math.pow(1.75,state.skills[s.id]));
+}
+
+function purchaseBusiness(id){
+  if(!canTrade())return;
+  const b=getBusiness(id);
+  if(!b||state.businesses[id]>=b.max)return;
+
+  const cost=businessCost(b);
+  if(state.cash<cost){
+    toast("Not enough cash for this investment.","bad");
+    return;
+  }
+
+  changeCash(-cost);
+  state.businesses[id]++;
+  logEvent(`Upgraded ${b.name} to level ${state.businesses[id]}.`,"good");
+  toast(`${b.icon} ${b.name} upgraded!`,"good");
+  sound("buy");
+  checkAchievements();
+  render();
+}
+
+function hireCrew(id){
+  if(!canTrade())return;
+  const c=getCrew(id);
+  if(!c||state.crew[id]>=c.max)return;
+
+  const cost=crewCost(c);
+  if(state.cash<cost){
+    toast("Not enough cash to hire this crew member.","bad");
+    return;
+  }
+
+  changeCash(-cost);
+  state.crew[id]++;
+  logEvent(`Hired a ${c.name} crew member.`,"good");
+  toast(`${c.icon} New crew member hired!`,"good");
+  sound("buy");
+  checkAchievements();
+  render();
+}
+
+function fireCrew(id){
+  if(!canTrade())return;
+  const c=getCrew(id);
+  if(!c||state.crew[id]<=0)return;
+
+  state.crew[id]--;
+  logEvent(`Dismissed one ${c.name} crew member.`);
+  render();
+}
+
+function purchaseSkill(id){
+  if(!canTrade())return;
+  const s=getSkill(id);
+  if(!s||state.skills[id]>=s.max)return;
+
+  const cost=skillCost(s);
+  if(state.cash<cost){
+    toast("Not enough cash for this skill.","bad");
+    return;
+  }
+
+  changeCash(-cost);
+  state.skills[id]++;
+  logEvent(`Improved ${s.name} to level ${state.skills[id]}.`,"good");
+  toast(`${s.icon} ${s.name} upgraded!`,"good");
+  sound("buy");
+  checkAchievements();
+  render();
+}
+
+function processRunners(){
+  const count=state.crew.runner;
+  if(!count)return;
+
+  // Automated trading uses market prices and respects cash/capacity.
+  // Each runner chooses a relatively undervalued commodity,
+  // buys it, and sells a portion of existing stock opportunistically.
+  for(let i=0;i<count;i++){
+    const candidates=CONFIG.goods
+      .filter(g=>g.tier<=3)
+      .sort((a,b)=>
+        buyPrice(a.id)/a.base-buyPrice(b.id)/b.base
+      );
+
+    const cheap=candidates[0];
+    const expensive=CONFIG.goods
+      .filter(g=>state.inventory[g.id]>0)
+      .sort((a,b)=>
+        sellPrice(b.id)/b.base-sellPrice(a.id)/a.base
+      )[0];
+
+    if(expensive&&sellPrice(expensive.id)>expensive.base*1.12){
+      const qty=Math.min(2,state.inventory[expensive.id]);
+      state.inventory[expensive.id]-=qty;
+      changeCash(qty*sellPrice(expensive.id));
+      state.stats.grossSales+=qty*sellPrice(expensive.id);
+    }
+
+    if(cheap&&capacity()>inventoryCount()){
+      const cost=buyPrice(cheap.id);
+      if(state.cash>=cost){
+        changeCash(-cost);
+        state.inventory[cheap.id]++;
+        state.stats.totalBought+=cost;
+      }
+    }
+  }
+}
+
+/* ==========================================================
+   TRAVEL
+========================================================== */
+
+function travelCost(id){
+  const d=getDistrict(id);
+  const discount=1-state.businesses.tunnel*.045;
+  return Math.max(25,Math.round(
+    (CONFIG.travelBase+d.fee)*
+    discount*
+    (1+state.prestige*.08)
+  ));
+}
+
+function travelDays(id){
+  return getDistrict(id).travel;
+}
+
+function requestTravel(id){
+  if(!canTrade())return;
+  if(id===state.district)return;
+  const d=getDistrict(id);
+  if(!d)return;
+
+  const cost=travelCost(id);
+  if(state.cash<cost){
+    toast("Not enough cash to travel.","bad");
+    return;
+  }
+
+  pendingTravel=id;
+  openModal("travel",`
+    <span class="tag">District Transfer</span>
+    <h2>${d.icon} ${escapeHTML(d.name)}</h2>
+    <p>${escapeHTML(d.description)}</p>
+    <div class="kv"><span>Travel cost</span><b>${money(cost)}</b></div>
+    <div class="kv"><span>Travel time</span><b>${travelDays(id)} days</b></div>
+    <div class="kv"><span>Danger</span><b>${d.danger}/5</b></div>
+    <div class="buttons">
+      <button data-modal="cancel">Cancel</button>
+      <button class="primary" data-modal="confirmTravel">Travel</button>
+    </div>
+  `);
+}
+
+function confirmTravel(){
+  if(!pendingTravel||state.encounter||state.gameOver)return;
+
+  const id=pendingTravel;
+  const cost=travelCost(id);
+  if(state.cash<cost)return;
+
+  changeCash(-cost);
+  const days=travelDays(id);
+  state.district=id;
+  state.stats.daysTraveled+=days;
+
+  if(!state.stats.districtsVisited.includes(id)){
+    state.stats.districtsVisited.push(id);
+  }
+
+  closeModal();
+
+  // Travel advances world time, including interest and wages.
+  for(let i=0;i<days;i++){
+    if(state.gameOver||state.encounter)break;
+    advanceDay(true);
+  }
+
+  const danger=getDistrict(id).danger;
+  addHeat(danger*1.1);
+
+  logEvent(`Traveled to ${getDistrict(id).name} for ${money(cost)}.`);
+
+  if(!state.encounter&&Math.random()<danger*.035){
+    startInspector();
+  }
+
+  toast(`Arrived in ${getDistrict(id).name}.`,"good");
+  checkAchievements();
+  render();
+}
+
+/* ==========================================================
+   HEAT AND INSPECTORS
+========================================================== */
+
+function startInspector(){
+  if(state.encounter||state.gameOver)return;
+
+  state.encounter={
+    district:state.district,
+    bribe:Math.round(
+      300+state.heat*18+
+      inventoryValue()*.045+
+      state.prestige*300
+    )
+  };
+
+  state.paused=true;
+  state.stats.inspectors++;
+
+  sound("alert");
+  logEvent("An inspector has stopped your operation!","bad");
+
+  showInspector();
+}
+
+function showInspector(){
+  if(!state.encounter)return;
+
+  const bribe=state.encounter.bribe;
+  const runChance=clamp(
+    35+state.skills.stealth*5+
+    state.crew.muscle*4-
+    getDistrict(state.district).danger*5,
+    10,90
+  );
+
+  openModal("inspector",`
+    <span class="tag red">Security Alert</span>
+    <h2>🚨 INSPECTOR ENCOUNTER</h2>
+    <p>An inspector has stopped you in
+    <b>${escapeHTML(getDistrict(state.district).name)}</b>.
+    Choose how to respond.</p>
+    <div class="kv">
+      <span>Current Heat</span>
+      <b class="red">${Math.round(state.heat)}%</b>
+    </div>
+    <div class="kv">
+      <span>Run success chance</span>
+      <b>${runChance}%</b>
+    </div>
+    <div class="kv">
+      <span>Bribe required</span>
+      <b>${money(bribe)}</b>
+    </div>
+    <div class="buttons">
+      <button data-modal="bribe" ${state.cash<bribe?"disabled":""}>
+        💵 Bribe
+      </button>
+      <button data-modal="run" class="danger">
+        🏃 Run
+      </button>
+      <button data-modal="hide" class="primary">
+        📦 Hide Goods
+      </button>
+    </div>
+    <small>Running and hiding goods have uncertain outcomes.</small>
+  `);
+}
+
+function resolveInspector(choice){
+  if(!state.encounter)return;
+
+  const bribe=state.encounter.bribe;
+  let success=false;
+  let message="";
+
+  if(choice==="bribe"){
+    if(state.cash<bribe)return;
+    changeCash(-bribe);
+    state.heat=clamp(state.heat-38,0,100);
+    success=true;
+    message=`Paid ${money(bribe)}. The inspector left.`;
+  }
+
+  if(choice==="run"){
+    const chance=clamp(
+      35+state.skills.stealth*5+
+      state.crew.muscle*4-
+      getDistrict(state.district).danger*5,
+      10,90
+    );
+    success=Math.random()*100<chance;
+
+    if(success){
+      state.heat=clamp(state.heat-23,0,100);
+      message="You escaped the inspector.";
+    }else{
+      const fine=Math.min(
+        state.cash,
+        Math.round(bribe*.75)
+      );
+      changeCash(-fine);
+      seizeGoods(.18);
+      addHeat(13);
+      message=`Escape failed. Lost ${money(fine)} and some goods.`;
+    }
+  }
+
+  if(choice==="hide"){
+    const chance=clamp(
+      48+state.skills.stealth*3+
+      state.crew.lookout*3-
+      getDistrict(state.district).danger*3,
+      15,85
+    );
+
+    success=Math.random()*100<chance;
+
+    if(success){
+      state.heat=clamp(state.heat-17,0,100);
+      message="Your goods passed inspection.";
+    }else{
+      seizeGoods(.28);
+      addHeat(9);
+      message="The inspector discovered part of your stash.";
+    }
+  }
+
+  if(success)state.stats.survived++;
+
+  state.encounter=null;
+  closeModal();
+
+  logEvent(message,success?"good":"bad");
+  toast(message,success?"good":"bad");
+
+  if(state.heat>=100&&state.cash<100&&inventoryCount()===0){
+    endGame("Your operation was shut down after an inspection.");
+  }
+
+  checkAchievements();
+  checkGameOver();
+  render();
+}
+
+function seizeGoods(fraction){
+  for(const g of CONFIG.goods){
+    const qty=state.inventory[g.id];
+    if(qty>0){
+      const lost=Math.ceil(qty*fraction*rand(.6,1.2));
+      state.inventory[g.id]=Math.max(0,qty-lost);
+    }
+  }
+}
+
+function fixerCost(){
+  return Math.round(250+state.heat*12+
+    state.prestige*200);
+}
+
+function payFixer(){
+  if(!canTrade())return;
+  if(state.heat<=0){
+    toast("Your Heat is already at zero.");
+    return;
+  }
+  const cost=fixerCost();
+  if(state.cash<cost){
+    toast("Not enough cash to hire a fixer.","bad");
+    return;
+  }
+  changeCash(-cost);
+  state.heat=clamp(state.heat-35,0,100);
+  logEvent(`Paid a fixer ${money(cost)} to lower Heat.`,"good");
+  toast("Heat reduced by 35.","good");
+  render();
+}
+
+/* ==========================================================
+   LOANS
+========================================================== */
+
+function loanLimit(){
+  return Math.round(
+    5000+
+    assetValue()*.22+
+    state.stats.grossSales*.025+
+    state.prestige*3000
+  );
+}
+
+function borrow(amount){
+  if(!canTrade())return;
+
+  if(state.debt>0){
+    toast("Repay your existing loan first.","bad");
+    return;
+  }
+
+  amount=int(amount);
+
+  if(amount<=0||amount>loanLimit()){
+    toast("Invalid loan amount.","bad");
+    return;
+  }
+
+  state.debt=amount;
+  state.loanDue=state.day+CONFIG.loanTerm;
+  state.loanPenaltyDay=state.loanDue;
+  changeCash(amount);
+
+  logEvent(`Borrowed ${money(amount)} from the Loan Shark.`);
+  toast(`Loan approved: ${money(amount)}.`,"good");
+  sound("buy");
+  render();
+}
+
+function repayLoan(amount){
+  if(!canTrade())return;
+  if(state.debt<=0)return;
+
+  const payment=Math.min(
+    state.cash,state.debt,int(amount)
+  );
+
+  if(payment<=0){
+    toast("Not enough cash to repay.","bad");
+    return;
+  }
+
+  changeCash(-payment);
+  state.debt=Math.max(0,state.debt-payment);
+
+  if(state.debt<1){
+    state.debt=0;
+    state.loanDue=0;
+    state.loanPenaltyDay=0;
+    state.stats.loansPaid++;
+    toast("Loan fully repaid!","good");
+    logEvent("Paid off a Loan Shark debt.","good");
+  }else{
+    toast(`Repaid ${money(payment)}.`,"good");
+  }
+
+  checkAchievements();
+  render();
+}
+
+function processLoan(){
+  if(state.debt<=0)return;
+
+  state.debt=Math.ceil(
+    state.debt*(1+CONFIG.interestRate+
+      state.prestige*.001)
+  );
+
+  if(state.day>state.loanDue&&state.day>=state.loanPenaltyDay){
+    state.loanPenaltyDay=state.day+4;
+    addHeat(14);
+    seizeGoods(.12);
+
+    const penalty=Math.round(state.debt*.04);
+    state.debt+=penalty;
+
+    logEvent(
+      `Overdue loan! Added ${money(penalty)} in penalties. Goods seized.`,
+      "bad"
+    );
+
+    toast("⚠️ Loan overdue! Your lender has retaliated.","bad");
+    sound("alert");
+  }
+}
+
+/* ==========================================================
+   DAY SYSTEM
+========================================================== */
+
+function advanceDay(fromTravel=false){
+  if(state.gameOver||state.encounter)return;
+
+  state.day++;
+
+  updatePrices();
+
+  const income=dailyIncome();
+  const wages=dailyWages();
+
+  if(income>0)changeCash(income);
+
+  if(wages>0){
+    if(state.cash>=wages){
+      changeCash(-wages);
+    }else{
+      // Crew leave when their wages cannot be paid.
+      const available=CONFIG.crew.filter(c=>state.crew[c.id]>0);
+      if(available.length){
+        const c=pick(available);
+        state.crew[c.id]--;
+        logEvent(`Couldn't pay wages. One ${c.name} left.`,"bad");
+      }
+      changeCash(-Math.min(state.cash,wages));
+    }
+  }
+
+  processRunners();
+  processLoan();
+
+  state.heat=clamp(
+    state.heat-
+    CONFIG.baseHeatDecay-
+    state.businesses.safehouse*1.5-
+    state.crew.lookout*.55,
+    0,100
+  );
+
+  const eventChance=.14+state.prestige*.01;
+  if(Math.random()<eventChance){
+    triggerEvent();
+  }
+
+  if(state.heat>=CONFIG.encounterHeat){
+    const danger=getDistrict(state.district).danger;
+    const chance=clamp(
+      .018+
+      (state.heat-CONFIG.encounterHeat)*.0035+
+      danger*.006-
+      state.crew.lookout*.003,
+      0,.35
+    );
+
+    if(Math.random()<chance){
+      startInspector();
+    }
+  }
+
+  recordWorth();
+  checkAchievements();
+  checkWin();
+  checkGameOver();
+
+  if(state.day%5===0){
+    saveGame(true);
+  }
+
+  if(!fromTravel){
+    render();
+  }
+}
+
+function recordWorth(){
+  state.worthHistory.push({
+    day:state.day,
+    cash:state.cash,
+    inventory:inventoryValue(),
+    assets:assetValue(),
+    debt:state.debt
+  });
+
+  if(state.worthHistory.length>CONFIG.maxHistory){
+    state.worthHistory.shift();
+  }
+
+  state.stats.largestCash=Math.max(
+    state.stats.largestCash,state.cash
+  );
+}
+
+/* ==========================================================
+   ACHIEVEMENTS
+========================================================== */
+
+const ACHIEVEMENTS=[
+  {
+    id:"first",icon:"🤝",name:"First Deal",
+    desc:"Complete your first trade.",
+    test:s=>s.stats.trades>=1
+  },
+  {
+    id:"trader",icon:"📈",name:"Market Regular",
+    desc:"Complete 100 trades.",
+    test:s=>s.stats.trades>=100
+  },
+  {
+    id:"profit10",icon:"💰",name:"Big Payday",
+    desc:"Make $10,000 profit in one sale.",
+    test:s=>s.stats.bestTrade>=10000
+  },
+  {
+    id:"inspector",icon:"🚨",name:"Close Call",
+    desc:"Survive an inspector encounter.",
+    test:s=>s.stats.survived>=1
+  },
+  {
+    id:"survivor",icon:"🥷",name:"Untouchable",
+    desc:"Survive 10 inspector encounters.",
+    test:s=>s.stats.survived>=10
+  },
+  {
+    id:"business1",icon:"🏪",name:"Entrepreneur",
+    desc:"Purchase your first business.",
+    test:s=>businessLevels(s)>=1
+  },
+  {
+    id:"business5",icon:"🏢",name:"Empire Builder",
+    desc:"Own five business levels.",
+    test:s=>businessLevels(s)>=5
+  },
+  {
+    id:"loan",icon:"💳",name:"Debt Free",
+    desc:"Fully repay a loan.",
+    test:s=>s.stats.loansPaid>=1
+  },
+  {
+    id:"million",icon:"💎",name:"Millionaire",
+    desc:"Reach $1,000,000 net worth.",
+    test:s=>netWorth()>=1000000
+  },
+  {
+    id:"kingpin",icon:"👑",name:"Kingpin",
+    desc:"Reach $10,000,000 net worth.",
+    test:s=>netWorth()>=CONFIG.goal
+  },
+  {
+    id:"traveler",icon:"🗺️",name:"City Explorer",
+    desc:"Visit all six districts.",
+    test:s=>s.stats.districtsVisited.length>=6
+  },
+  {
+    id:"crew",icon:"👥",name:"The Organization",
+    desc:"Hire ten crew members.",
+    test:s=>crewCount(s)>=10
+  },
+  {
+    id:"veteran",icon:"📅",name:"Street Veteran",
+    desc:"Survive 100 days.",
+    test:s=>s.day>=100
+  },
+  {
+    id:"stash",icon:"📦",name:"Collector",
+    desc:"Own at least one of every commodity.",
+    test:s=>CONFIG.goods.every(g=>s.inventory[g.id]>0)
+  },
+  {
+    id:"rep",icon:"⭐",name:"Local Legend",
+    desc:"Reach 75 reputation in a district.",
+    test:s=>Object.values(s.reputation).some(v=>v>=75)
+  },
+  {
+    id:"prestige",icon:"🌌",name:"New Syndicate",
+    desc:"Enter prestige mode.",
+    test:s=>s.prestige>=1
+  }
+];
+
+function businessLevels(s=state){
+  return Object.values(s.businesses).reduce((a,b)=>a+b,0);
+}
+
+function crewCount(s=state){
+  return Object.values(s.crew).reduce((a,b)=>a+b,0);
+}
+
+function checkAchievements(){
+  for(const a of ACHIEVEMENTS){
+    if(state.achievements.includes(a.id))continue;
+
+    let unlocked=false;
+    try{unlocked=a.test(state)}catch(e){}
+
+    if(unlocked){
+      state.achievements.push(a.id);
+      toast(`🏆 Achievement Unlocked: ${a.name}`,"good");
+      sound("achievement");
+      logEvent(`Achievement unlocked: ${a.name}`,"good");
+    }
+  }
+}
+
+/* ==========================================================
+   VICTORY, GAME OVER, PRESTIGE
+========================================================== */
+
+function checkWin(){
+  if(state.won||netWorth()<CONFIG.goal)return;
+
+  state.won=true;
+  state.victoryShown=true;
+  state.paused=true;
+
+  checkAchievements();
+  saveGame(true);
+  showVictory();
+}
+
+function showVictory(){
+  openModal("victory",`
+    <span class="tag amber">Vantablack Conquered</span>
+    <h2>👑 KINGPIN OF VANTABLACK</h2>
+    <p>You've built a trading empire worth more than
+    <b>${money(CONFIG.goal)}</b>.</p>
+
+    <div class="kv">
+      <span>Final net worth</span>
+      <b class="green">${money(netWorth())}</b>
+    </div>
+    <div class="kv">
+      <span>Days survived</span>
+      <b>${fmt(state.day)}</b>
+    </div>
+    <div class="kv">
+      <span>Total trades</span>
+      <b>${fmt(state.stats.trades)}</b>
+    </div>
+    <div class="kv">
+      <span>Businesses owned</span>
+      <b>${businessLevels()}</b>
+    </div>
+    <div class="kv">
+      <span>Inspector encounters survived</span>
+      <b>${state.stats.survived}</b>
+    </div>
+
+    <p style="margin-top:18px">
+      Start a new syndicate for permanent bonuses and
+      increased difficulty, or keep growing this empire.
+    </p>
+
+    <div class="buttons">
+      <button data-modal="continue" class="primary">
+        Continue Playing
+      </button>
+      <button data-modal="prestige" class="pink">
+        🌌 New Syndicate
+      </button>
+    </div>
+  `);
+  sound("achievement");
+}
+
+function prestigeGame(){
+  const next=state.prestige+1;
+  const muted=state.muted;
+
+  state=newGame(next,muted);
+  dayProgress=0;
+  recordWorth();
+
+  logEvent(`Founded Syndicate ${next+1}. Permanent bonuses activated.`,"good");
+
+  closeModal();
+  checkAchievements();
+  saveGame(true);
+  toast(`New Syndicate founded! Prestige ${next}.`,"good");
+  render();
+}
+
+function checkGameOver(){
+  if(state.gameOver||state.won)return;
+
+  const empty=inventoryCount()===0;
+  const noAssets=businessLevels()===0;
+  const noCrew=crewCount()===0;
+  const noMoney=state.cash<Math.min(...CONFIG.goods.map(g=>buyPrice(g.id)));
+
+  // A player with no debt may still be able to borrow.
+  const canBorrow=state.debt===0;
+
+  if(
+    empty&&noAssets&&noCrew&&noMoney&&
+    !canBorrow&&state.debt>0&&state.day>state.loanDue
+  ){
+    endGame("Your syndicate collapsed under unpaid debt.");
+  }
+
+  if(state.heat>=100&&state.cash<100&&empty){
+    endGame("Your operation was shut down by inspectors.");
+  }
+}
+
+function endGame(reason){
+  if(state.gameOver)return;
+
+  state.gameOver=true;
+  state.paused=true;
+  saveGame(true);
+
+  openModal("gameover",`
+    <span class="tag red">Operation Terminated</span>
+    <h2>☠️ GAME OVER</h2>
+    <p>${escapeHTML(reason)}</p>
+    <div class="kv">
+      <span>Days survived</span>
+      <b>${state.day}</b>
+    </div>
+    <div class="kv">
+      <span>Final net worth</span>
+      <b>${money(netWorth())}</b>
+    </div>
+    <div class="buttons">
+      <button data-modal="restart" class="danger">
+        Restart Game
+      </button>
+    </div>
+  `);
+}
+
+/* ==========================================================
+   UI UTILITIES
+========================================================== */
+
+function toast(text,type=""){
+  const box=$("toastbox");
+  const el=document.createElement("div");
+  el.className="toast "+type;
+  el.textContent=text;
+  box.prepend(el);
+
+  while(box.children.length>4){
+    box.lastElementChild.remove();
+  }
+
+  setTimeout(()=>el.remove(),4200);
+}
+
+function logEvent(text,type=""){
+  state.log.unshift({
+    day:state.day,
+    text,
+    type
+  });
+
+  if(state.log.length>70)state.log.pop();
+}
+
+function logHTML(limit=20){
+  if(!state.log.length){
+    return `<div class="empty">No activity yet.</div>`;
+  }
+
+  return state.log.slice(0,limit).map(e=>`
+    <div class="logentry ${escapeHTML(e.type||"")}">
+      <small>DAY ${e.day}</small>
+      ${escapeHTML(e.text)}
+    </div>
+  `).join("");
+}
+
+function openModal(type,html){
+  modalType=type;
+  $("modalContent").innerHTML=html;
+  $("overlay").classList.remove("hidden");
+}
+
+function closeModal(){
+  if(modalType==="inspector"&&state.encounter)return;
+  $("overlay").classList.add("hidden");
+  $("modalContent").innerHTML="";
+  modalType=null;
+  pendingTravel=null;
+}
+
+function showTutorial(){
+  openModal("tutorial",`
+    <span class="tag">Welcome to Vantablack</span>
+    <h2>🌃 Welcome to BLACKMARKET</h2>
+    <p>You're a rookie merchant in a neon-soaked underground city.
+    Your goal is to build a <b>$10 million trading empire</b>.</p>
+
+    <div class="kv">
+      <span>📈 Trading</span>
+      <b>Buy low, sell high</b>
+    </div>
+    <p>Prices change every day. Different districts offer different
+    prices, so profitable routes are the key to growing your cash.</p>
+
+    <div class="kv">
+      <span>🚨 Heat</span>
+      <b>Watch your risk</b>
+    </div>
+    <p>Trading raises Heat. High Heat attracts inspectors.
+    Lookouts, Safehouses, and Fixers can help keep it under control.</p>
+
+    <div class="kv">
+      <span>💳 Loans</span>
+      <b>Borrow carefully</b>
+    </div>
+    <p>Loans give you quick capital, but daily interest and
+    overdue penalties can destroy an unprepared business.</p>
+
+    <div class="kv">
+      <span>🏢 Empire</span>
+      <b>Invest for passive income</b>
+    </div>
+    <p>Purchase businesses, hire crew, and upgrade skills.
+    Each day lasts about eight seconds at normal speed.</p>
+
+    <p><b>Tip:</b> Start by selling your initial goods when prices
+    are favorable, then look for cheap commodities in the Docks.</p>
+
+    <div class="buttons">
+      <button data-modal="start" class="primary">
+        Enter Vantablack →
+      </button>
+    </div>
+  `);
+}
+
+/* ==========================================================
+   MARKET RENDERING
+========================================================== */
+
+function renderMarket(){
+  const district=getDistrict(state.district);
+
+  $("marketSubtitle").textContent=
+    `${district.name} • Day ${state.day} • Prices update daily`;
+
+  $("marketStatus").textContent=
+    state.paused?"MARKET PAUSED":"MARKET OPEN";
+
+  const rows=CONFIG.goods.map(g=>{
+    const history=state.history[g.id];
+    const last=history[history.length-1];
+    const previous=history.length>1?
+      history[history.length-2]:last;
+
+    const trend=last>previous*1.003?"▲":
+      last<previous*.997?"▼":"—";
+
+    const trendClass=trend==="▲"?"green":
+      trend==="▼"?"red":"muted";
+
+    const locked=
+      g.tier>=4&&state.reputation[state.district]<10;
+
+    const buy=buyPrice(g.id);
+    const sell=sellPrice(g.id);
+    const owned=state.inventory[g.id];
+    const free=capacity()-inventoryCount();
+
+    const canBuy=!locked&&free>0&&state.cash>=buy;
+    const canSell=owned>0;
+
+    return `
+      <tr>
+        <td>
+          <div class="goodname">
+            <span class="icon">${g.icon}</span>
+            <span>
+              <b>${escapeHTML(g.name)}</b><br>
+              <span class="tier tier-${g.tier}">
+                Tier ${g.tier}
+              </span>
+            </span>
+          </div>
+        </td>
+        <td class="green"><b>${money(buy)}</b></td>
+        <td class="amber"><b>${money(sell)}</b></td>
+        <td class="${trendClass}"><b>${trend}</b></td>
+        <td><canvas class="spark"
+          data-spark="${g.id}" width="100" height="32"></canvas></td>
+        <td><b>${fmt(owned)}</b></td>
+        <td>
+          <div class="actions">
+            <button data-trade="${g.id}" data-side="buy"
+              data-qty="1" ${canBuy?"":"disabled"}>1</button>
+            <button data-trade="${g.id}" data-side="buy"
+              data-qty="10" ${canBuy?"":"disabled"}>10</button>
+            <button data-trade="${g.id}" data-side="buy"
+              data-qty="max" ${canBuy?"":"disabled"}>Max</button>
+          </div>
+          ${locked?'<small>Requires 10 reputation</small>':""}
+        </td>
+        <td>
+          <div class="actions">
+            <button data-trade="${g.id}" data-side="sell"
+              data-qty="1" ${canSell?"":"disabled"}>1</button>
+            <button data-trade="${g.id}" data-side="sell"
+              data-qty="10" ${canSell?"":"disabled"}>10</button>
+            <button data-trade="${g.id}" data-side="sell"
+              data-qty="max" ${canSell?"":"disabled"}>All</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join("");
+
+  $("marketRows").innerHTML=rows;
+
+  const cheapest=CONFIG.goods
+    .filter(g=>g.tier<=2)
+    .sort((a,b)=>
+      buyPrice(a.id)/a.base-buyPrice(b.id)/b.base
+    )[0];
+
+  const expensive=CONFIG.goods
+    .sort((a,b)=>
+      sellPrice(b.id)/b.base-sellPrice(a.id)/a.base
+    )[0];
+
+  $("tradingIntel").innerHTML=`
+    <div class="kv">
+      <span>Best local bargain</span>
+      <b class="green">${cheapest.icon} ${cheapest.name}</b>
+    </div>
+    <div class="kv">
+      <span>Strongest local demand</span>
+      <b class="amber">${expensive.icon} ${expensive.name}</b>
+    </div>
+    <div class="kv">
+      <span>Daily business income</span>
+      <b>${money(dailyIncome())}</b>
+    </div>
+    <div class="kv">
+      <span>Daily crew wages</span>
+      <b class="red">${money(dailyWages())}</b>
+    </div>
+    <div class="kv">
+      <span>Market forecast</span>
+      <b>${forecast(cheapest.id)}</b>
+    </div>
+    <p class="muted" style="margin:12px 0 0">
+      District prices differ from citywide prices.
+      Compare buying costs with selling prices elsewhere.
+    </p>
+  `;
+
+  $("recentLog").innerHTML=logHTML(6);
+
+  document.querySelectorAll("[data-spark]").forEach(canvas=>{
+    const id=canvas.dataset.spark;
+    const values=state.history[id];
+    drawSpark(canvas,values);
+  });
+}
+
+/* ==========================================================
+   CHART DRAWING
+========================================================== */
+
+function drawSpark(canvas,values){
+  const ctx=canvas.getContext("2d");
+  if(!ctx||!values.length)return;
+
+  const w=canvas.width;
+  const h=canvas.height;
+
+  ctx.clearRect(0,0,w,h);
+
+  const min=Math.min(...values)*.96;
+  const max=Math.max(...values)*1.04;
+  const range=Math.max(1,max-min);
+
+  const rising=values[values.length-1]>=values[0];
+  const color=rising?"#48e6a2":"#ff617b";
+
+  ctx.beginPath();
+
+  values.forEach((v,i)=>{
+    const x=values.length===1?0:i/(values.length-1)*w;
+    const y=h-3-(v-min)/range*(h-6);
+
+    if(i===0)ctx.moveTo(x,y);
+    else ctx.lineTo(x,y);
+  });
+
+  ctx.strokeStyle=color;
+  ctx.lineWidth=2;
+  ctx.stroke();
+}
+
+function drawWorthChart(){
+  const canvas=$("worthChart");
+  if(!canvas)return;
+
+  const rect=canvas.getBoundingClientRect();
+  if(rect.width<1)return;
+
+  const dpr=Math.min(2,window.devicePixelRatio||1);
+  canvas.width=Math.floor(rect.width*dpr);
+  canvas.height=Math.floor(220*dpr);
+
+  const ctx=canvas.getContext("2d");
+  ctx.scale(dpr,dpr);
+
+  const w=rect.width;
+  const h=220;
+  const pad={left:55,right:14,top:15,bottom:30};
+
+  ctx.clearRect(0,0,w,h);
+
+  const values=state.worthHistory;
+  if(values.length<2){
+    ctx.fillStyle="#8394ab";
+    ctx.fillText("Net worth history will appear here.",15,30);
+    return;
+  }
+
+  const series=[
+    {key:"cash",color:"#48e6a2"},
+    {key:"inventory",color:"#39e8f4"},
+    {key:"assets",color:"#ffbd59"}
+  ];
+
+  const max=Math.max(
+    1000,
+    ...values.map(v=>Math.max(
+      v.cash,v.inventory,v.assets,
+      v.cash+v.inventory+v.assets-v.debt
+    ))
+  );
+
+  const chartW=w-pad.left-pad.right;
+  const chartH=h-pad.top-pad.bottom;
+
+  ctx.strokeStyle="#29364a";
+  ctx.fillStyle="#8394ab";
+  ctx.font="11px Segoe UI, Arial";
+
+  for(let i=0;i<=4;i++){
+    const y=pad.top+chartH*i/4;
+
+    ctx.beginPath();
+    ctx.moveTo(pad.left,y);
+    ctx.lineTo(w-pad.right,y);
+    ctx.stroke();
+
+    ctx.fillText(
+      fmt(max*(1-i/4)),
+      5,y+4
+    );
+  }
+
+  function plot(getValue,color,width=2){
+    ctx.beginPath();
+
+    values.forEach((v,i)=>{
+      const x=pad.left+i/(values.length-1)*chartW;
+      const y=pad.top+chartH-
+        clamp(getValue(v),0,max)/max*chartH;
+
+      if(i===0)ctx.moveTo(x,y);
+      else ctx.lineTo(x,y);
+    });
+
+    ctx.strokeStyle=color;
+    ctx.lineWidth=width;
+    ctx.stroke();
+  }
+
+  series.forEach(s=>plot(v=>v[s.key],s.color));
+
+  plot(
+    v=>v.cash+v.inventory+v.assets-v.debt,
+    "#ff4caa",3
+  );
+
+  ctx.fillStyle="#8394ab";
+  ctx.fillText(`Day ${values[0].day}`,pad.left,h-7);
+  ctx.textAlign="right";
+  ctx.fillText(
+    `Day ${values[values.length-1].day}`,
+    w-pad.right,h-7
+  );
+  ctx.textAlign="left";
+}
+
+/* ==========================================================
+   TRAVEL RENDERING
+========================================================== */
+
+function renderTravel(){
+  $("districtGrid").innerHTML=CONFIG.districts.map(d=>{
+    const current=d.id===state.district;
+    const cost=travelCost(d.id);
+    const rep=state.reputation[d.id];
+
+    return `
+      <div class="card district ${current?"current":""}"
+        style="--district-color:${d.color}">
+        <div class="row">
+          <span class="emoji">${d.icon}</span>
+          <span class="badge">${current?"CURRENT LOCATION":
+            `REP ${Math.floor(rep)}/100`}</span>
+        </div>
+
+        <h3 style="margin-top:12px">${d.name}</h3>
+        <p>${d.description}</p>
+
+        <div class="kv">
+          <span>Danger</span>
+          <div class="dangerbar">
+            ${Array.from({length:5},(_,i)=>
+              `<span class="${i<d.danger?"on":""}"></span>`
+            ).join("")}
+          </div>
+        </div>
+
+        <div class="kv">
+          <span>Travel time</span>
+          <b>${d.travel} day${d.travel>1?"s":""}</b>
+        </div>
+
+        <div class="kv">
+          <span>Travel cost</span>
+          <b>${money(cost)}</b>
+        </div>
+
+        <p style="margin:12px 0 5px">
+          <span class="green">▼ Cheap:</span>
+          ${d.cheap.map(id=>getGood(id).name).join(", ")}
+        </p>
+
+        <p style="margin:0 0 12px">
+          <span class="amber">▲ Premium:</span>
+          ${d.premium.map(id=>getGood(id).name).join(", ")}
+        </p>
+
+        <button class="${current?"":"primary"}"
+          data-travel="${d.id}"
+          ${current||state.cash<cost?"disabled":""}
+          style="width:100%">
+          ${current?"You Are Here":`Travel — ${money(cost)}`}
+        </button>
+      </div>
+    `;
+  }).join("");
+
+  $("reputationList").innerHTML=CONFIG.districts.map(d=>`
+    <div style="margin-bottom:13px">
+      <div class="row">
+        <b>${d.icon} ${d.name}</b>
+        <small>${Math.floor(state.reputation[d.id])}/100</small>
+      </div>
+      <div class="progress" style="margin-top:6px">
+        <div style="width:${state.reputation[d.id]}%;
+          background:${d.color}"></div>
+      </div>
+    </div>
+  `).join("");
+}
+
+/* ==========================================================
+   INVENTORY RENDERING
+========================================================== */
+
+function renderInventory(){
+  $("inventorySummary").innerHTML=`
+    <div class="card">
+      <small>Used Capacity</small>
+      <div class="big">${inventoryCount()} / ${capacity()}</div>
+      <div class="progress">
+        <div style="width:${clamp(
+          inventoryCount()/capacity()*100,0,100
+        )}%"></div>
+      </div>
+    </div>
+    <div class="card">
+      <small>Inventory Value</small>
+      <div class="big green">${money(inventoryValue())}</div>
+    </div>
+    <div class="card">
+      <small>Unique Commodities</small>
+      <div class="big">${CONFIG.goods.filter(
+        g=>state.inventory[g.id]>0
+      ).length} / ${CONFIG.goods.length}</div>
+    </div>
+  `;
+
+  const owned=CONFIG.goods
+    .filter(g=>state.inventory[g.id]>0)
+    .sort((a,b)=>b.tier-a.tier||b.base-a.base);
+
+  $("inventoryList").innerHTML=owned.length?
+    owned.map(g=>`
+      <div class="kv">
+        <span>
+          ${g.icon} <b>${g.name}</b>
+          <small> · Tier ${g.tier}</small>
+        </span>
+        <span>
+          ${fmt(state.inventory[g.id])} owned ·
+          <b class="green">${money(
+            state.inventory[g.id]*sellPrice(g.id)
+          )}</b>
+        </span>
+      </div>
+    `).join(""):
+    `<div class="empty">
+      Your stash is empty. Visit the Market to buy goods.
+    </div>`;
+}
+
+/* ==========================================================
+   EMPIRE RENDERING
+========================================================== */
+
+function renderEmpire(){
+  $("empireSummary").innerHTML=`
+    <div class="card">
+      <small>Daily Passive Income</small>
+      <div class="big green">${money(dailyIncome())}</div>
+    </div>
+    <div class="card">
+      <small>Business Asset Value</small>
+      <div class="big">${money(assetValue())}</div>
+    </div>
+    <div class="card">
+      <small>Business Levels Owned</small>
+      <div class="big">${businessLevels()}</div>
+    </div>
+  `;
+
+  $("businessGrid").innerHTML=CONFIG.businesses.map(b=>{
+    const level=state.businesses[b.id];
+    const maxed=level>=b.max;
+    const cost=businessCost(b);
+
+    return `
+      <div class="card">
+        <div class="row">
+          <span style="font-size:30px">${b.icon}</span>
+          <span class="badge">LEVEL ${level}/${b.max}</span>
+        </div>
+
+        <h3 style="margin-top:12px">${b.name}</h3>
+        <p>${b.desc}</p>
+
+        <div class="kv">
+          <span>Daily Income</span>
+          <b class="green">${money(
+            level*b.income*(1+state.prestige*.05)
+          )}</b>
+        </div>
+
+        <div class="kv">
+          <span>Next Upgrade</span>
+          <b>${maxed?"MAX":money(cost)}</b>
+        </div>
+
+        <button class="primary"
+          style="width:100%;margin-top:14px"
+          data-business="${b.id}"
+          ${maxed||state.cash<cost?"disabled":""}>
+          ${maxed?"MAX LEVEL":level?"Upgrade":"Purchase"}
+        </button>
+      </div>
+    `;
+  }).join("");
+}
+
+/* ==========================================================
+   CREW RENDERING
+========================================================== */
+
+function renderCrew(){
+  $("crewSummary").innerHTML=`
+    <div class="row wrap">
+      <div>
+        <small>Total Crew</small>
+        <h2 style="margin:0">${crewCount()}</h2>
+      </div>
+      <div>
+        <small>Daily Wages</small>
+        <h2 class="red" style="margin:0">${money(dailyWages())}</h2>
+      </div>
+      <div>
+        <small>Daily Business Income</small>
+        <h2 class="green" style="margin:0">${money(dailyIncome())}</h2>
+      </div>
+    </div>
+  `;
+
+  $("crewGrid").innerHTML=CONFIG.crew.map(c=>{
+    const count=state.crew[c.id];
+    const cost=crewCost(c);
+
+    return `
+      <div class="card">
+        <div class="row">
+          <span style="font-size:30px">${c.icon}</span>
+          <span class="badge">${count}/${c.max} HIRED</span>
+        </div>
+        <h3 style="margin-top:12px">${c.name}</h3>
+        <p>${c.desc}</p>
+
+        <div class="kv">
+          <span>Hiring Cost</span>
+          <b>${money(cost)}</b>
+        </div>
+
+        <div class="kv">
+          <span>Wages / Day</span>
+          <b class="red">${money(c.wage*count)}</b>
+        </div>
+
+        <div class="actions" style="margin-top:14px">
+          <button class="primary"
+            data-hire="${c.id}"
+            ${count>=c.max||state.cash<cost?"disabled":""}>
+            Hire
+          </button>
+          <button data-fire="${c.id}"
+            ${count<=0?"disabled":""}>
+            Dismiss
+          </button>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+/* ==========================================================
+   SKILLS RENDERING
+========================================================== */
+
+function renderSkills(){
+  $("skillGrid").innerHTML=CONFIG.skills.map(s=>{
+    const level=state.skills[s.id];
+    const maxed=level>=s.max;
+    const cost=skillCost(s);
+
+    return `
+      <div class="card">
+        <div class="row">
+          <span style="font-size:30px">${s.icon}</span>
+          <span class="badge">LEVEL ${level}/${s.max}</span>
+        </div>
+
+        <h3 style="margin-top:12px">${s.name}</h3>
+        <p>${s.desc}</p>
+
+        <div class="progress" style="margin:15px 0">
+          <div style="width:${level/s.max*100}%"></div>
+        </div>
+
+        <div class="kv">
+          <span>Next Level</span>
+          <b>${maxed?"MAX":money(cost)}</b>
+        </div>
+
+        <button class="primary"
+          style="width:100%;margin-top:14px"
+          data-skill="${s.id}"
+          ${maxed||state.cash<cost?"disabled":""}>
+          ${maxed?"MAX LEVEL":"Upgrade"}
+        </button>
+      </div>
+    `;
+  }).join("");
+}
+
+/* ==========================================================
+   LOANS RENDERING
+========================================================== */
+
+function renderLoans(){
+  const limit=loanLimit();
+  const debt=state.debt;
+
+  $("loanPanel").innerHTML=`
+    <div class="grid">
+      <div class="card">
+        <small>Outstanding Debt</small>
+        <div class="big red">${money(debt)}</div>
+      </div>
+      <div class="card">
+        <small>Daily Interest</small>
+        <div class="big amber">
+          ${(CONFIG.interestRate*100+
+            state.prestige*.1).toFixed(1)}%
+        </div>
+      </div>
+      <div class="card">
+        <small>Repayment Deadline</small>
+        <div class="big">${debt?
+          `Day ${state.loanDue}`:"No Loan"}</div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:16px">
+      <h3>🦈 Loan Shark</h3>
+      <p class="muted">
+        Borrowing provides quick capital.
+        Interest compounds every day.
+        Overdue debt triggers penalties and seizures.
+      </p>
+
+      ${debt?`
+        <div class="kv">
+          <span>Days Remaining</span>
+          <b class="${state.day>state.loanDue?"red":"amber"}">
+            ${Math.max(0,state.loanDue-state.day)}
+          </b>
+        </div>
+        <div class="actions" style="margin-top:15px">
+          <button data-repay="quarter">
+            Repay 25%
+          </button>
+          <button data-repay="half">
+            Repay 50%
+          </button>
+          <button class="success" data-repay="all">
+            Repay Maximum
+          </button>
+        </div>
+      `:`
+        <div class="kv">
+          <span>Available Credit</span>
+          <b>${money(limit)}</b>
+        </div>
+        <div class="actions" style="margin-top:15px">
+          <button data-borrow="small">
+            Borrow ${money(Math.round(limit*.25))}
+          </button>
+          <button data-borrow="medium">
+            Borrow ${money(Math.round(limit*.5))}
+          </button>
+          <button class="primary" data-borrow="max">
+            Borrow ${money(limit)}
+          </button>
+        </div>
+      `}
+    </div>
+  `;
+
+  $("fixerPanel").innerHTML=`
+    <div class="row wrap">
+      <span>Current Heat: <b class="red">
+        ${Math.round(state.heat)}%
+      </b></span>
+      <button data-action="fixer"
+        ${state.heat<=0||state.cash<fixerCost()?"disabled":""}>
+        Reduce Heat by 35 — ${money(fixerCost())}
+      </button>
+    </div>
+  `;
+}
+
+/* ==========================================================
+   STATS AND ACHIEVEMENTS RENDERING
+========================================================== */
+
+function renderStats(){
+  const s=state.stats;
+
+  const data=[
+    ["Total Trades",fmt(s.trades),"🤝"],
+    ["Total Trading Profit",money(s.totalProfit),"💰"],
+    ["Best Single Trade",money(s.bestTrade),"📈"],
+    ["Gross Sales",money(s.grossSales),"🧾"],
+    ["Days Survived",fmt(state.day),"📅"],
+    ["Inspectors Survived",fmt(s.survived),"🚨"],
+    ["Districts Visited",`${s.districtsVisited.length}/6`,"🗺️"],
+    ["Loans Repaid",fmt(s.loansPaid),"💳"],
+    ["Total Events",fmt(s.totalEvents),"📡"],
+    ["Largest Cash Balance",money(s.largestCash),"💎"],
+    ["Business Levels",fmt(businessLevels()),"🏢"],
+    ["Prestige Level",fmt(state.prestige),"🌌"]
+  ];
+
+  $("statsGrid").innerHTML=data.map(([label,value,icon])=>`
+    <div class="card">
+      <small>${icon} ${label}</small>
+      <div class="big">${value}</div>
+    </div>
+  `).join("");
+
+  $("fullLog").innerHTML=logHTML(60);
+  requestAnimationFrame(drawWorthChart);
+}
+
+function renderAchievements(){
+  const unlocked=state.achievements.length;
+
+  $("achievementProgress").innerHTML=`
+    <div class="row">
+      <b>Achievements Unlocked</b>
+      <b class="accent">${unlocked}/${ACHIEVEMENTS.length}</b>
+    </div>
+    <div class="progress" style="margin-top:12px">
+      <div style="width:${
+        unlocked/ACHIEVEMENTS.length*100
+      }%"></div>
+    </div>
+  `;
+
+  $("achievementGrid").innerHTML=ACHIEVEMENTS.map(a=>{
+    const done=state.achievements.includes(a.id);
+
+    return `
+      <div class="card achievement ${done?"unlocked":""}">
+        <span class="medal">${a.icon}</span>
+        <div>
+          <b>${a.name}</b>
+          <p style="margin:3px 0">${a.desc}</p>
+          <small class="${done?"green":""}">
+            ${done?"✓ UNLOCKED":"LOCKED"}
+          </small>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+/* ==========================================================
+   HUD AND MAIN RENDER
+========================================================== */
+
+let previousCash=null;
+
+function renderHUD(){
+  const cash=$("hudCash");
+  const old=previousCash;
+
+  cash.textContent=money(state.cash);
+
+  if(old!==null&&Math.abs(state.cash-old)>.5){
+    cash.classList.remove("flashup","flashdown");
+    void cash.offsetWidth;
+    cash.classList.add(
+      state.cash>old?"flashup":"flashdown"
+    );
+  }
+
+  previousCash=state.cash;
+
+  $("hudDebt").textContent=money(state.debt);
+  $("hudHeat").textContent=Math.round(state.heat)+"%";
+  $("heatFill").style.width=state.heat+"%";
+  $("hudDay").textContent=fmt(state.day);
+  $("hudDistrict").textContent=getDistrict(state.district).name;
+  $("hudCapacity").textContent=
+    `${inventoryCount()} / ${capacity()}`;
+  $("hudWorth").textContent=money(netWorth());
+
+  $("goalText").textContent=
+    `${money(netWorth())} / ${money(CONFIG.goal)}`;
+
+  $("goalFill").style.width=
+    clamp(netWorth()/CONFIG.goal*100,0,100)+"%";
+
+  $("pauseBtn").textContent=state.paused?"▶ Resume":"⏸ Pause";
+  $("muteBtn").textContent=state.muted?"🔇":"🔊";
+
+  document.querySelectorAll("[data-speed]").forEach(btn=>{
+    btn.classList.toggle(
+      "selected",Number(btn.dataset.speed)===state.speed
+    );
+  });
+}
+
+function render(){
+  renderHUD();
+
+  switch(currentTab){
+    case "market":renderMarket();break;
+    case "travel":renderTravel();break;
+    case "inventory":renderInventory();break;
+    case "empire":renderEmpire();break;
+    case "crew":renderCrew();break;
+    case "skills":renderSkills();break;
+    case "loans":renderLoans();break;
+    case "stats":renderStats();break;
+    case "achievements":renderAchievements();break;
+  }
+}
+
+function switchTab(tab){
+  if(!$("page-"+tab))return;
+
+  currentTab=tab;
+
+  document.querySelectorAll(".page").forEach(el=>{
+    el.classList.toggle(
+      "active",el.id==="page-"+tab
+    );
+  });
+
+  document.querySelectorAll(".nav").forEach(el=>{
+    el.classList.toggle(
+      "active",el.dataset.tab===tab
+    );
+  });
+
+  render();
+}
+
+/* ==========================================================
+   INPUT HANDLING
+   One delegated click handler avoids duplicate listeners.
+========================================================== */
+
+document.addEventListener("click",e=>{
+  const button=e.target.closest("button");
+  if(!button||button.disabled)return;
+
+  if(button.dataset.tab){
+    switchTab(button.dataset.tab);
+    return;
+  }
+
+  if(button.dataset.speed){
+    state.speed=Number(button.dataset.speed);
+    renderHUD();
+    return;
+  }
+
+  if(button.id==="pauseBtn"){
+    if(state.encounter||state.gameOver)return;
+    state.paused=!state.paused;
+    renderHUD();
+    return;
+  }
+
+  if(button.id==="muteBtn"){
+    state.muted=!state.muted;
+    renderHUD();
+    return;
+  }
+
+  if(button.id==="saveBtn"){
+    saveGame();
+    return;
+  }
+
+  if(button.dataset.trade){
+    const qty=button.dataset.qty==="max"?
+      "max":Number(button.dataset.qty);
+
+    trade(
+      button.dataset.trade,
+      button.dataset.side,
+      qty
+    );
+    return;
+  }
+
+  if(button.dataset.travel){
+    requestTravel(button.dataset.travel);
+    return;
+  }
+
+  if(button.dataset.business){
+    purchaseBusiness(button.dataset.business);
+    return;
+  }
+
+  if(button.dataset.hire){
+    hireCrew(button.dataset.hire);
+    return;
+  }
+
+  if(button.dataset.fire){
+    fireCrew(button.dataset.fire);
+    return;
+  }
+
+  if(button.dataset.skill){
+    purchaseSkill(button.dataset.skill);
+    return;
+  }
+
+  if(button.dataset.borrow){
+    const limit=loanLimit();
+    const ratios={small:.25,medium:.5,max:1};
+    borrow(Math.round(limit*ratios[button.dataset.borrow]));
+    return;
+  }
+
+  if(button.dataset.repay){
+    const amount={
+      quarter:Math.ceil(state.debt*.25),
+      half:Math.ceil(state.debt*.5),
+      all:state.debt
+    }[button.dataset.repay];
+
+    repayLoan(amount);
+    return;
+  }
+
+  if(button.dataset.action){
+    switch(button.dataset.action){
+      case "save":
+        saveGame();
+        break;
+      case "tutorial":
+        showTutorial();
+        break;
+      case "fixer":
+        payFixer();
+        break;
+      case "reset":
+        openModal("reset",`
+          <span class="tag red">Permanent Action</span>
+          <h2>Reset Your Save?</h2>
+          <p>This deletes your current progress, including
+          businesses, cash, achievements, and prestige.</p>
+          <div class="buttons">
+            <button data-modal="cancel">Cancel</button>
+            <button data-modal="confirmReset" class="danger">
+              Delete Everything
+            </button>
+          </div>
+        `);
+        break;
+    }
+    return;
+  }
+
+  if(button.dataset.modal){
+    switch(button.dataset.modal){
+      case "cancel":
+      case "start":
+        closeModal();
+        break;
+
+      case "confirmTravel":
+        confirmTravel();
+        break;
+
+      case "bribe":
+      case "run":
+      case "hide":
+        resolveInspector(button.dataset.modal);
+        break;
+
+      case "continue":
+        state.paused=false;
+        closeModal();
+        break;
+
+      case "prestige":
+        prestigeGame();
+        break;
+
+      case "restart":
+        state=newGame(0,state.muted);
+        dayProgress=0;
+        recordWorth();
+        closeModal();
+        saveGame(true);
+        render();
+        break;
+
+      case "confirmReset":
+        try{localStorage.removeItem(CONFIG.saveKey)}catch(e){}
+        state=newGame();
+        dayProgress=0;
+        recordWorth();
+        closeModal();
+        saveGame(true);
+        switchTab("market");
+        toast("Save reset. New game started.","good");
+        showTutorial();
+        break;
+    }
+  }
+});
+
+document.addEventListener("keydown",e=>{
+  const tag=document.activeElement?.tagName;
+  if(["INPUT","TEXTAREA","SELECT"].includes(tag))return;
+  if(e.ctrlKey||e.metaKey||e.altKey)return;
+
+  if(e.code==="Space"){
+    e.preventDefault();
+    if(state.encounter||state.gameOver||modalType)return;
+    state.paused=!state.paused;
+    renderHUD();
+    return;
+  }
+
+  if(/^[1-9]$/.test(e.key)){
+    if(modalType)return;
+    const tabs=[
+      "market","travel","inventory","empire","crew",
+      "skills","loans","stats","achievements"
+    ];
+    switchTab(tabs[Number(e.key)-1]);
+  }
+});
+
+/* ==========================================================
+   GAME LOOP
+========================================================== */
+
+function gameLoop(now){
+  const elapsed=Math.min(250,now-lastFrame);
+  lastFrame=now;
+
+  if(!state.paused&&!state.gameOver&&!state.encounter){
+    dayProgress+=elapsed*state.speed;
+
+    let ticks=0;
+
+    while(dayProgress>=CONFIG.dayMs&&ticks<8){
+      dayProgress-=CONFIG.dayMs;
+      advanceDay();
+      ticks++;
+
+      if(state.paused||state.encounter||state.gameOver)break;
+    }
+  }
+
+  if(Date.now()-lastSave>=CONFIG.autosaveMs){
+    saveGame(true);
+  }
+
+  requestAnimationFrame(gameLoop);
+}
+
+/* ==========================================================
+   INITIALIZATION
+========================================================== */
+
+function init(){
+  const loaded=loadGame();
+
+  state=loaded||newGame();
+
+  if(!state.worthHistory.length){
+    recordWorth();
+  }
+
+  render();
+
+  if(!loaded){
+    showTutorial();
+  }else if(state.gameOver){
+    endGame("Your previous syndicate has collapsed.");
+    // endGame doesn't reopen a previously saved game-over
+    // state, so explicitly show the restart option.
+    openModal("gameover",`
+      <span class="tag red">Operation Terminated</span>
+      <h2>☠️ GAME OVER</h2>
+      <p>Your previous syndicate has collapsed.</p>
+      <div class="buttons">
+        <button data-modal="restart" class="danger">
+          Restart Game
+        </button>
+      </div>
+    `);
+  }else if(state.won&&state.victoryShown){
+    state.paused=true;
+    showVictory();
+  }
+
+  window.addEventListener("beforeunload",()=>{
+    saveGame(true);
+  });
+
+  document.addEventListener("visibilitychange",()=>{
+    if(document.hidden){
+      saveGame(true);
+      lastFrame=performance.now();
+    }
+  });
+
+  window.addEventListener("resize",()=>{
+    if(currentTab==="stats")drawWorthChart();
+  });
+
+  requestAnimationFrame(gameLoop);
+}
+
+init();
+
+</script>
+</body>
+</html>
