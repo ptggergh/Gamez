@@ -1,0 +1,3664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#080b18">
+<title>STARFORGE — Cosmic RNG</title>
+
+<style>
+/* ============================================================
+   STARFORGE — STYLES
+   ============================================================ */
+
+:root {
+    --bg: #080b18;
+    --panel: rgba(16, 22, 44, .92);
+    --panel-light: rgba(25, 34, 62, .94);
+    --border: rgba(120, 145, 255, .16);
+    --text: #edf1ff;
+    --muted: #8c97b7;
+    --accent: #8178ff;
+    --accent2: #35d9ff;
+    --green: #53e9ac;
+    --gold: #ffd36d;
+    --danger: #ff627c;
+    --radius: 18px;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--text);
+    font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    overflow-x: hidden;
+}
+
+button, input, select {
+    font: inherit;
+}
+
+button {
+    cursor: pointer;
+}
+
+button:disabled {
+    opacity: .45;
+    cursor: not-allowed;
+}
+
+button:focus-visible,
+select:focus-visible,
+input:focus-visible {
+    outline: 2px solid var(--accent2);
+    outline-offset: 3px;
+}
+
+#starfield {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -2;
+    pointer-events: none;
+}
+
+.background-glow {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+        radial-gradient(ellipse at 50% 5%, rgba(91, 65, 181, .19), transparent 55%),
+        radial-gradient(ellipse at 90% 90%, rgba(24, 99, 159, .12), transparent 50%);
+}
+
+#flash {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    opacity: 0;
+    pointer-events: none;
+}
+
+#flash.active {
+    animation: flashEffect .65s ease-out forwards;
+}
+
+@keyframes flashEffect {
+    0% { opacity: .48; }
+    100% { opacity: 0; }
+}
+
+body.shake {
+    animation: screenShake .38s linear;
+}
+
+@keyframes screenShake {
+    0%,100% { transform: translate(0); }
+    20% { transform: translate(-5px, 3px); }
+    40% { transform: translate(5px, -3px); }
+    60% { transform: translate(-4px, -2px); }
+    80% { transform: translate(4px, 3px); }
+}
+
+header {
+    position: relative;
+    z-index: 5;
+    border-bottom: 1px solid var(--border);
+    background: rgba(8, 11, 24, .82);
+    backdrop-filter: blur(18px);
+}
+
+.header-inner {
+    max-width: 1320px;
+    margin: auto;
+    padding: 19px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    flex-wrap: wrap;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+}
+
+.brand-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    display: grid;
+    place-items: center;
+    font-size: 26px;
+    background: linear-gradient(135deg, #7a66ff, #31caff);
+    box-shadow: 0 0 25px rgba(116, 91, 255, .32);
+}
+
+.brand h1 {
+    font-size: 23px;
+    letter-spacing: 3px;
+    margin: 0;
+    font-weight: 900;
+}
+
+.brand small {
+    display: block;
+    color: var(--muted);
+    font-size: 11px;
+    letter-spacing: 2px;
+    margin-top: 3px;
+}
+
+.header-stats {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.stat-pill {
+    padding: 11px 16px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: rgba(25, 32, 59, .7);
+    min-width: 105px;
+}
+
+.stat-pill small {
+    color: var(--muted);
+    display: block;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.stat-pill strong {
+    display: block;
+    margin-top: 3px;
+    font-size: 17px;
+}
+
+.gold { color: var(--gold); }
+.cyan { color: var(--accent2); }
+.green { color: var(--green); }
+
+.icon-button {
+    background: var(--panel-light);
+    color: white;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    min-height: 43px;
+    padding: 0 14px;
+}
+
+.icon-button:hover {
+    border-color: var(--accent);
+}
+
+main {
+    max-width: 1320px;
+    margin: auto;
+    padding: 24px;
+}
+
+.tabs {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 14px;
+    margin-bottom: 14px;
+    scrollbar-width: thin;
+}
+
+.tab {
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--muted);
+    padding: 13px 20px;
+    border-radius: 12px;
+    white-space: nowrap;
+    font-weight: 700;
+    transition: .2s;
+}
+
+.tab:hover {
+    color: white;
+    background: rgba(255,255,255,.05);
+}
+
+.tab.active {
+    color: white;
+    background: rgba(122, 107, 255, .17);
+    border-color: rgba(122, 107, 255, .38);
+}
+
+.page {
+    display: none;
+    animation: pageEnter .3s ease;
+}
+
+.page.active {
+    display: block;
+}
+
+@keyframes pageEnter {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: 0 10px 40px rgba(0,0,0,.12);
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 19px 21px;
+    border-bottom: 1px solid var(--border);
+}
+
+.panel-header h2,
+.panel-header h3 {
+    margin: 0;
+    font-size: 16px;
+}
+
+.panel-body {
+    padding: 20px;
+}
+
+.muted {
+    color: var(--muted);
+}
+
+.small {
+    font-size: 12px;
+}
+
+.forge-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.65fr) minmax(285px, .85fr);
+    gap: 18px;
+}
+
+.forge-panel {
+    min-height: 600px;
+    position: relative;
+    overflow: hidden;
+}
+
+.forge-panel::before {
+    content: "";
+    position: absolute;
+    width: 420px;
+    height: 420px;
+    border-radius: 50%;
+    left: 50%;
+    top: 26%;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(circle, rgba(105, 86, 239, .11), transparent 70%);
+    pointer-events: none;
+}
+
+.forge-content {
+    position: relative;
+    padding: 30px 22px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.eyebrow {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: var(--muted);
+    font-weight: 800;
+}
+
+.forge-content h2 {
+    font-size: clamp(22px, 3vw, 32px);
+    margin: 12px 0 6px;
+}
+
+.forge-content > p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.star-stage {
+    position: relative;
+    width: 270px;
+    height: 270px;
+    display: grid;
+    place-items: center;
+    margin: 15px 0 0;
+}
+
+.orbit {
+    position: absolute;
+    border: 1px solid rgba(143, 138, 255, .18);
+    border-radius: 50%;
+    width: 240px;
+    height: 240px;
+    animation: orbit 25s linear infinite;
+}
+
+.orbit:nth-child(2) {
+    width: 195px;
+    height: 195px;
+    border-style: dashed;
+    animation-direction: reverse;
+    animation-duration: 35s;
+}
+
+.orbit::after {
+    content: "";
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    background: var(--accent2);
+    border-radius: 50%;
+    top: 18%;
+    left: 12%;
+    box-shadow: 0 0 12px var(--accent2);
+}
+
+@keyframes orbit {
+    to { transform: rotate(360deg); }
+}
+
+.star-object {
+    --star-color: #8178ff;
+    width: 140px;
+    height: 140px;
+    position: relative;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background:
+        radial-gradient(circle at 33% 28%, rgba(255,255,255,.95), transparent 12%),
+        radial-gradient(circle at 38% 34%, color-mix(in srgb, var(--star-color), white 45%), var(--star-color) 42%, rgba(0,0,0,.65) 100%);
+    box-shadow:
+        0 0 25px var(--star-color),
+        0 0 75px color-mix(in srgb, var(--star-color), transparent 65%),
+        inset -14px -16px 28px rgba(0,0,0,.35);
+    animation: starFloat 3.5s ease-in-out infinite;
+    transition: background .3s, box-shadow .3s;
+}
+
+.star-object::before {
+    content: "";
+    position: absolute;
+    inset: -12px;
+    border-radius: 50%;
+    border: 2px solid color-mix(in srgb, var(--star-color), transparent 75%);
+    animation: aura 2.5s ease-in-out infinite;
+}
+
+.star-object::after {
+    content: "";
+    position: absolute;
+    width: 165%;
+    height: 14px;
+    border: 3px solid color-mix(in srgb, var(--star-color), white 25%);
+    border-radius: 50%;
+    transform: rotate(-25deg);
+    opacity: .42;
+    filter: drop-shadow(0 0 8px var(--star-color));
+}
+
+.star-object.rolling {
+    animation: rollSpin .15s linear infinite;
+}
+
+.star-object.singularity {
+    background: radial-gradient(circle at 50% 50%, #000 52%, #151521 66%, #fff 71%, #9ab7ff 76%, transparent 85%);
+    box-shadow: 0 0 35px #fff, 0 0 100px #777bff;
+}
+
+.star-object.secret {
+    background: conic-gradient(#ff4d6d, #ffe16b, #53ffb1, #44d9ff, #9b6dff, #ff4d6d);
+    animation: rainbowSpin 2.5s linear infinite;
+    box-shadow: 0 0 45px #ff75e6, 0 0 100px #64eaff;
+}
+
+.star-object.secret::before {
+    border-color: white;
+}
+
+@keyframes rainbowSpin {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes starFloat {
+    0%,100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-9px) scale(1.04); }
+}
+
+@keyframes rollSpin {
+    to { transform: rotate(360deg) scale(.85); }
+}
+
+@keyframes aura {
+    50% { transform: scale(1.13); opacity: .25; }
+}
+
+.result-name {
+    font-size: clamp(20px, 3vw, 28px);
+    font-weight: 900;
+    min-height: 35px;
+    margin-top: 0;
+}
+
+.result-tier {
+    margin-top: 6px;
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.result-odds {
+    color: var(--muted);
+    margin-top: 6px;
+    font-size: 12px;
+}
+
+.forge-button {
+    width: min(100%, 340px);
+    margin-top: 25px;
+    padding: 21px;
+    border: 1px solid rgba(255,255,255,.3);
+    border-radius: 15px;
+    color: white;
+    font-size: 20px;
+    font-weight: 900;
+    letter-spacing: 4px;
+    background: linear-gradient(135deg, #7259f2, #397de8);
+    box-shadow: 0 7px 0 #282a6d, 0 15px 35px rgba(102, 82, 255, .28);
+    transition: transform .12s, filter .15s;
+}
+
+.forge-button:not(:disabled):hover {
+    filter: brightness(1.2);
+    transform: translateY(-2px);
+}
+
+.forge-button:not(:disabled):active {
+    transform: translateY(5px);
+    box-shadow: 0 2px 0 #282a6d;
+}
+
+.forge-button:disabled {
+    opacity: .75;
+}
+
+.cooldown-track {
+    width: min(100%, 340px);
+    height: 4px;
+    background: rgba(255,255,255,.09);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 16px;
+}
+
+.cooldown-fill {
+    height: 100%;
+    width: 100%;
+    background: linear-gradient(90deg, #7867ff, #45e5ff);
+    transition: width .06s linear;
+}
+
+.forge-hint {
+    margin-top: 10px;
+    font-size: 11px;
+    color: var(--muted);
+}
+
+.side-column {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.control-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 0;
+}
+
+.control-row + .control-row {
+    border-top: 1px solid var(--border);
+}
+
+.control-row strong {
+    display: block;
+    font-size: 13px;
+}
+
+.control-row small {
+    display: block;
+    margin-top: 4px;
+    color: var(--muted);
+    font-size: 11px;
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 48px;
+    height: 27px;
+    flex-shrink: 0;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    inset: 0;
+    background: #343b5b;
+    border-radius: 30px;
+    transition: .2s;
+}
+
+.slider::before {
+    content: "";
+    position: absolute;
+    width: 19px;
+    height: 19px;
+    left: 4px;
+    top: 4px;
+    background: white;
+    border-radius: 50%;
+    transition: .2s;
+}
+
+.switch input:checked + .slider {
+    background: #7366ff;
+}
+
+.switch input:checked + .slider::before {
+    transform: translateX(21px);
+}
+
+select {
+    background: #202945;
+    color: white;
+    border: 1px solid var(--border);
+    padding: 9px;
+    border-radius: 9px;
+    max-width: 125px;
+}
+
+.history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 330px;
+    overflow-y: auto;
+}
+
+.history-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    padding: 11px;
+    border-radius: 9px;
+    background: rgba(255,255,255,.035);
+    border-left: 3px solid var(--item-color);
+}
+
+.history-item strong {
+    font-size: 12px;
+}
+
+.history-item small {
+    color: var(--muted);
+    font-size: 10px;
+}
+
+.history-item span {
+    font-size: 11px;
+    color: var(--item-color);
+    font-weight: 800;
+}
+
+.section-intro {
+    margin-bottom: 22px;
+}
+
+.section-intro h2 {
+    font-size: 27px;
+    margin: 0 0 7px;
+}
+
+.section-intro p {
+    color: var(--muted);
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.shop-grid,
+.achievement-grid,
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0,1fr));
+    gap: 15px;
+}
+
+.shop-card {
+    padding: 22px;
+    display: flex;
+    flex-direction: column;
+    min-height: 240px;
+}
+
+.shop-icon {
+    font-size: 28px;
+    margin-bottom: 13px;
+}
+
+.shop-card h3 {
+    margin: 0 0 7px;
+    font-size: 16px;
+}
+
+.shop-card p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.7;
+    flex: 1;
+}
+
+.level {
+    font-size: 11px;
+    color: var(--accent2);
+    margin: 15px 0;
+    font-weight: 800;
+}
+
+.primary-button,
+.secondary-button,
+.danger-button {
+    border-radius: 10px;
+    padding: 12px 15px;
+    font-size: 12px;
+    font-weight: 800;
+    border: 1px solid transparent;
+}
+
+.primary-button {
+    background: linear-gradient(135deg, #7765ff, #4b80ed);
+    color: white;
+}
+
+.secondary-button {
+    color: white;
+    background: rgba(255,255,255,.07);
+    border-color: var(--border);
+}
+
+.danger-button {
+    background: rgba(255, 85, 113, .1);
+    border-color: rgba(255,85,113,.3);
+    color: #ff8ca0;
+}
+
+.primary-button:not(:disabled):hover,
+.secondary-button:not(:disabled):hover {
+    filter: brightness(1.2);
+}
+
+.rebirth-panel {
+    margin-top: 18px;
+    padding: 25px;
+    border-color: rgba(255, 206, 103, .3);
+    background:
+        radial-gradient(circle at 100% 0%, rgba(255, 179, 55, .12), transparent 45%),
+        var(--panel);
+}
+
+.rebirth-panel h3 {
+    margin: 0 0 8px;
+    color: var(--gold);
+}
+
+.rebirth-panel p {
+    color: var(--muted);
+    line-height: 1.7;
+    font-size: 13px;
+}
+
+.rebirth-details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+    margin: 17px 0;
+}
+
+.rebirth-details strong {
+    color: white;
+    display: block;
+}
+
+.rebirth-details small {
+    color: var(--muted);
+}
+
+.collection-toolbar {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+    align-items: center;
+}
+
+.collection-toolbar input {
+    flex: 1;
+    min-width: 180px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    color: white;
+    border-radius: 10px;
+    padding: 12px 14px;
+}
+
+.collection-progress {
+    margin-bottom: 22px;
+}
+
+.progress-info {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-size: 12px;
+}
+
+.progress-bar {
+    height: 9px;
+    border-radius: 10px;
+    background: rgba(255,255,255,.08);
+    overflow: hidden;
+}
+
+.progress-bar > div {
+    height: 100%;
+    width: 0;
+    background: linear-gradient(90deg, #7368ff, #39d6ff);
+    transition: width .4s;
+}
+
+.tier-section {
+    margin-bottom: 28px;
+}
+
+.tier-heading {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 13px;
+}
+
+.tier-heading h3 {
+    margin: 0;
+    font-size: 16px;
+}
+
+.tier-heading small {
+    color: var(--muted);
+}
+
+.tier-dot {
+    width: 11px;
+    height: 11px;
+    background: var(--tier-color);
+    border-radius: 50%;
+    box-shadow: 0 0 13px var(--tier-color);
+}
+
+.collection-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0,1fr));
+    gap: 12px;
+}
+
+.star-card {
+    padding: 20px 12px;
+    min-height: 165px;
+    border-radius: 13px;
+    border: 1px solid var(--border);
+    background: rgba(18, 24, 45, .9);
+    text-align: center;
+    transition: .2s;
+}
+
+.star-card.found {
+    border-color: color-mix(in srgb, var(--tier-color), transparent 65%);
+}
+
+.star-card:hover {
+    transform: translateY(-3px);
+}
+
+.mini-star {
+    width: 49px;
+    height: 49px;
+    border-radius: 50%;
+    margin: 0 auto 16px;
+    background: radial-gradient(circle at 30% 25%, white, var(--tier-color) 45%, #10101e);
+    box-shadow: 0 0 18px color-mix(in srgb, var(--tier-color), transparent 50%);
+}
+
+.star-card.locked .mini-star {
+    background: #22283c;
+    box-shadow: none;
+    filter: grayscale(1);
+}
+
+.star-card h4 {
+    margin: 0 0 6px;
+    font-size: 12px;
+    overflow-wrap: anywhere;
+}
+
+.star-card small {
+    display: block;
+    color: var(--muted);
+    font-size: 10px;
+    margin-top: 5px;
+}
+
+.star-card.locked {
+    opacity: .55;
+}
+
+.stat-card {
+    padding: 24px;
+}
+
+.stat-card small {
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 11px;
+}
+
+.stat-card strong {
+    display: block;
+    margin-top: 13px;
+    font-size: clamp(20px, 2.8vw, 30px);
+    overflow-wrap: anywhere;
+}
+
+.achievement-card {
+    display: flex;
+    gap: 14px;
+    padding: 20px;
+    min-height: 120px;
+}
+
+.achievement-card.locked {
+    opacity: .43;
+    filter: grayscale(.8);
+}
+
+.achievement-icon {
+    font-size: 29px;
+}
+
+.achievement-card h3 {
+    margin: 0 0 6px;
+    font-size: 13px;
+}
+
+.achievement-card p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 11px;
+    line-height: 1.6;
+}
+
+.achievement-card small {
+    display: block;
+    color: var(--green);
+    margin-top: 8px;
+    font-size: 10px;
+}
+
+#notifications {
+    position: fixed;
+    right: 20px;
+    top: 90px;
+    z-index: 200;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+}
+
+.notification {
+    width: min(330px, calc(100vw - 40px));
+    padding: 16px;
+    background: #18213e;
+    border: 1px solid rgba(122, 112, 255, .5);
+    border-radius: 13px;
+    box-shadow: 0 10px 40px rgba(0,0,0,.4);
+    animation: notifyIn .3s ease;
+}
+
+.notification strong {
+    display: block;
+    font-size: 13px;
+}
+
+.notification small {
+    display: block;
+    color: var(--muted);
+    margin-top: 5px;
+    font-size: 11px;
+}
+
+@keyframes notifyIn {
+    from { transform: translateX(40px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+#cinematic {
+    position: fixed;
+    inset: 0;
+    z-index: 150;
+    background: rgba(2, 3, 12, .97);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+    padding: 20px;
+    overflow: hidden;
+}
+
+#cinematic.active {
+    display: flex;
+    animation: cinematicEnter .6s ease;
+}
+
+@keyframes cinematicEnter {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.cinematic-ring {
+    width: 190px;
+    height: 190px;
+    border: 3px solid var(--cinema-color);
+    border-radius: 50%;
+    box-shadow:
+        0 0 50px var(--cinema-color),
+        inset 0 0 40px var(--cinema-color);
+    animation: cinemaPulse 1.3s ease-in-out infinite;
+    margin-bottom: 35px;
+}
+
+@keyframes cinemaPulse {
+    50% { transform: scale(1.25); filter: brightness(2); }
+}
+
+#cinematic h2 {
+    font-size: clamp(28px, 6vw, 65px);
+    letter-spacing: 4px;
+    margin: 0;
+}
+
+#cinematic p {
+    color: var(--muted);
+    letter-spacing: 4px;
+    font-size: 12px;
+}
+
+#cinematic .cinema-tier {
+    color: var(--cinema-color);
+    margin-top: 20px;
+    font-weight: 900;
+    letter-spacing: 5px;
+}
+
+.rainbow-text {
+    background: linear-gradient(90deg, #ff5478, #ffdc61, #59ffb6, #53caff, #b47bff, #ff5478);
+    background-size: 300%;
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent !important;
+    animation: rainbowMove 3s linear infinite;
+}
+
+@keyframes rainbowMove {
+    to { background-position: 300% 0; }
+}
+
+.footer {
+    text-align: center;
+    color: #626d90;
+    font-size: 11px;
+    padding: 35px 15px;
+}
+
+@media(max-width: 950px) {
+    .forge-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .side-column {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .shop-grid,
+    .achievement-grid {
+        grid-template-columns: repeat(2, minmax(0,1fr));
+    }
+
+    .collection-grid {
+        grid-template-columns: repeat(3, minmax(0,1fr));
+    }
+}
+
+@media(max-width: 600px) {
+    main {
+        padding: 13px;
+    }
+
+    .header-inner {
+        padding: 14px;
+    }
+
+    .brand h1 {
+        font-size: 19px;
+    }
+
+    .header-stats {
+        width: 100%;
+    }
+
+    .stat-pill {
+        flex: 1;
+        min-width: 0;
+        padding: 10px;
+    }
+
+    .stat-pill strong {
+        font-size: 14px;
+    }
+
+    .tabs {
+        gap: 4px;
+    }
+
+    .tab {
+        padding: 12px 13px;
+        font-size: 12px;
+    }
+
+    .forge-panel {
+        min-height: 570px;
+    }
+
+    .side-column {
+        grid-template-columns: 1fr;
+    }
+
+    .shop-grid,
+    .achievement-grid,
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .collection-grid {
+        grid-template-columns: repeat(2, minmax(0,1fr));
+    }
+
+    .star-stage {
+        width: 240px;
+        height: 240px;
+    }
+
+    .star-object {
+        width: 125px;
+        height: 125px;
+    }
+
+    .orbit {
+        width: 220px;
+        height: 220px;
+    }
+
+    .orbit:nth-child(2) {
+        width: 180px;
+        height: 180px;
+    }
+
+    #notifications {
+        top: auto;
+        bottom: 20px;
+    }
+}
+
+@media(prefers-reduced-motion: reduce) {
+    .orbit,
+    .star-object,
+    .star-object::before,
+    .cinematic-ring {
+        animation-duration: 12s;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="starfield"></canvas>
+<div class="background-glow"></div>
+<div id="flash"></div>
+
+<header>
+    <div class="header-inner">
+        <div class="brand">
+            <div class="brand-icon">✦</div>
+            <div>
+                <h1>STARFORGE</h1>
+                <small>COSMIC RNG</small>
+            </div>
+        </div>
+
+        <div class="header-stats">
+            <div class="stat-pill">
+                <small>Stardust</small>
+                <strong class="gold" id="headerDust">0</strong>
+            </div>
+
+            <div class="stat-pill">
+                <small>Luck</small>
+                <strong class="cyan" id="headerLuck">1.00x</strong>
+            </div>
+
+            <div class="stat-pill">
+                <small>Forges</small>
+                <strong id="headerForges">0</strong>
+            </div>
+
+            <button class="icon-button" id="muteButton" title="Toggle sound">
+                🔊
+            </button>
+        </div>
+    </div>
+</header>
+
+<main>
+
+<nav class="tabs">
+    <button class="tab active" data-page="forge">✦ Forge</button>
+    <button class="tab" data-page="shop">◆ Shop</button>
+    <button class="tab" data-page="collection">◈ Collection</button>
+    <button class="tab" data-page="stats">▤ Stats</button>
+    <button class="tab" data-page="achievements">★ Achievements</button>
+</nav>
+
+<!-- ==========================================================
+     FORGE PAGE
+     ========================================================== -->
+
+<section id="page-forge" class="page active">
+
+    <div class="forge-layout">
+
+        <div class="panel forge-panel">
+            <div class="forge-content">
+
+                <div class="eyebrow">THE CELESTIAL ANVIL</div>
+
+                <h2>Forge the Universe</h2>
+
+                <p>Every star has a story. Discover them all.</p>
+
+                <div class="star-stage">
+                    <div class="orbit"></div>
+                    <div class="orbit"></div>
+                    <div id="starObject" class="star-object"></div>
+                </div>
+
+                <div id="resultName" class="result-name">
+                    Awaiting Creation
+                </div>
+
+                <div id="resultTier" class="result-tier muted">
+                    UNKNOWN
+                </div>
+
+                <div id="resultOdds" class="result-odds">
+                    Press FORGE to begin
+                </div>
+
+                <button id="forgeButton" class="forge-button">
+                    ✦ FORGE
+                </button>
+
+                <div class="cooldown-track">
+                    <div id="cooldownFill" class="cooldown-fill"></div>
+                </div>
+
+                <div class="forge-hint">
+                    SPACE to forge · <span id="cooldownText">1.20s</span> cooldown
+                </div>
+
+            </div>
+        </div>
+
+        <div class="side-column">
+
+            <div class="panel">
+                <div class="panel-header">
+                    <h3>Forge Controls</h3>
+                </div>
+
+                <div class="panel-body">
+
+                    <div class="control-row">
+                        <div>
+                            <strong>Auto-Forge</strong>
+                            <small>Automatically forge stars</small>
+                        </div>
+
+                        <label class="switch">
+                            <input type="checkbox" id="autoToggle">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="control-row">
+                        <div>
+                            <strong>Auto Speed</strong>
+                            <small>Automatic forge interval</small>
+                        </div>
+
+                        <select id="autoSpeed">
+                            <option value="2000">Slow · 2s</option>
+                            <option value="1200" selected>Normal · 1.2s</option>
+                            <option value="700">Fast · 0.7s</option>
+                            <option value="350">Turbo · 0.35s</option>
+                            <option value="150">Hyper · 0.15s</option>
+                        </select>
+                    </div>
+
+                    <div class="control-row">
+                        <div>
+                            <strong>Lucky Streak</strong>
+                            <small id="buffStatus">Temporary luck boost</small>
+                        </div>
+
+                        <button id="buffButton" class="secondary-button">
+                            Activate
+                        </button>
+                    </div>
+
+                    <div class="control-row">
+                        <div>
+                            <strong>Collection</strong>
+                            <small>Unique stars discovered</small>
+                        </div>
+
+                        <strong id="quickCollection" class="cyan">0/36</strong>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-header">
+                    <h3>Recent Forges</h3>
+                    <small class="muted">LAST 10</small>
+                </div>
+
+                <div class="panel-body">
+                    <div id="historyList" class="history-list">
+                        <p class="muted small">Your cosmic journey begins here.</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- ==========================================================
+     SHOP PAGE
+     ========================================================== -->
+
+<section id="page-shop" class="page">
+
+    <div class="section-intro">
+        <h2>Celestial Workshop</h2>
+        <p>Invest Stardust into powerful upgrades to improve your forging abilities.</p>
+    </div>
+
+    <div id="shopGrid" class="shop-grid"></div>
+
+    <div class="panel rebirth-panel">
+
+        <h3>✦ Stellar Collapse</h3>
+
+        <p>
+            Collapse your current universe and begin again with permanent cosmic power.
+            Your Stardust, upgrades, and current streak reset, but your collection,
+            lifetime statistics, achievements, and permanent Luck remain.
+        </p>
+
+        <div class="rebirth-details">
+            <div>
+                <small>Required Stardust</small>
+                <strong id="rebirthCost">250K</strong>
+            </div>
+
+            <div>
+                <small>Current Collapses</small>
+                <strong id="rebirthCount">0</strong>
+            </div>
+
+            <div>
+                <small>Permanent Luck</small>
+                <strong id="rebirthLuck">1.00x</strong>
+            </div>
+
+            <div>
+                <small>Next Bonus</small>
+                <strong class="gold">+0.50x</strong>
+            </div>
+        </div>
+
+        <button id="rebirthButton" class="primary-button">
+            COLLAPSE UNIVERSE
+        </button>
+
+    </div>
+
+</section>
+
+<!-- ==========================================================
+     COLLECTION PAGE
+     ========================================================== -->
+
+<section id="page-collection" class="page">
+
+    <div class="section-intro">
+        <h2>Celestial Index</h2>
+        <p>Discover all 36 unique stars across nine rarity tiers.</p>
+    </div>
+
+    <div class="collection-progress">
+        <div class="progress-info">
+            <strong id="collectionCount">0 / 36 Discovered</strong>
+            <span id="collectionPercent">0%</span>
+        </div>
+
+        <div class="progress-bar">
+            <div id="collectionProgress"></div>
+        </div>
+    </div>
+
+    <div class="collection-toolbar">
+        <input id="collectionSearch" placeholder="Search discovered stars...">
+
+        <select id="collectionFilter">
+            <option value="all">All Stars</option>
+            <option value="found">Discovered</option>
+            <option value="missing">Undiscovered</option>
+        </select>
+    </div>
+
+    <div id="collectionContainer"></div>
+
+</section>
+
+<!-- ==========================================================
+     STATS PAGE
+     ========================================================== -->
+
+<section id="page-stats" class="page">
+
+    <div class="section-intro">
+        <h2>Cosmic Records</h2>
+        <p>Your journey through the stars, recorded for eternity.</p>
+    </div>
+
+    <div id="statsGrid" class="stats-grid"></div>
+
+    <div class="panel" style="margin-top:20px">
+        <div class="panel-header">
+            <h3>Save Management</h3>
+        </div>
+
+        <div class="panel-body">
+            <p class="muted small">
+                Your progress is saved automatically every 10 seconds,
+                after purchases, and when leaving the game.
+                Saves are stored locally in this browser.
+            </p>
+
+            <button id="saveButton" class="secondary-button">
+                Save Now
+            </button>
+
+            <button id="resetButton" class="danger-button">
+                Reset Save
+            </button>
+        </div>
+    </div>
+
+</section>
+
+<!-- ==========================================================
+     ACHIEVEMENTS PAGE
+     ========================================================== -->
+
+<section id="page-achievements" class="page">
+
+    <div class="section-intro">
+        <h2>Cosmic Achievements</h2>
+        <p>Milestones earned through dedication, discovery, and extraordinary luck.</p>
+    </div>
+
+    <div id="achievementGrid" class="achievement-grid"></div>
+
+</section>
+
+</main>
+
+<div class="footer">
+    STARFORGE · FORGE YOUR OWN UNIVERSE
+</div>
+
+<div id="notifications"></div>
+
+<div id="flash"></div>
+
+<div id="cinematic">
+    <div class="cinematic-ring"></div>
+    <p>THE UNIVERSE HAS ANSWERED</p>
+    <h2 id="cinematicName"></h2>
+    <div id="cinematicTier" class="cinema-tier"></div>
+    <p id="cinematicOdds"></p>
+</div>
+
+<script>
+"use strict";
+
+/* ============================================================
+   STARFORGE — CONFIGURATION
+
+   Edit this object to customize the game.
+
+   IMPORTANT:
+   Rarity odds represent base rarity weights, not independent
+   guaranteed probabilities. The weights are normalized into
+   a single random selection.
+
+   The rarest tiers are rolled first through weighted selection.
+   Luck multiplies the weights of rarer tiers.
+
+   Each tier contains four equally likely collectible stars.
+   ============================================================ */
+
+const CONFIG = {
+
+    saveKey: "starforge_save_v1",
+
+    baseCooldown: 1200,
+
+    minimumCooldown: 120,
+
+    rarity: [
+        {
+            id: "dust",
+            name: "Dust",
+            odds: 2,
+            color: "#9298a9",
+            reward: 2,
+            stars: [
+                "Fading Ash",
+                "Cosmic Grain",
+                "Forgotten Dust",
+                "Silent Fragment"
+            ]
+        },
+        {
+            id: "spark",
+            name: "Spark",
+            odds: 4,
+            color: "#e7f2ff",
+            reward: 5,
+            stars: [
+                "First Light",
+                "Silver Spark",
+                "Wandering Flame",
+                "Astral Flicker"
+            ]
+        },
+        {
+            id: "ember",
+            name: "Ember",
+            odds: 10,
+            color: "#ff984c",
+            reward: 15,
+            stars: [
+                "Dying Ember",
+                "Solar Cinder",
+                "Crimson Hearth",
+                "Infernal Seed"
+            ]
+        },
+        {
+            id: "nova",
+            name: "Nova",
+            odds: 50,
+            color: "#54baff",
+            reward: 80,
+            stars: [
+                "Frostbite Nova",
+                "Azure Awakening",
+                "Crystal Flare",
+                "Celestial Bloom"
+            ]
+        },
+        {
+            id: "pulsar",
+            name: "Pulsar",
+            odds: 250,
+            color: "#ae79ff",
+            reward: 400,
+            stars: [
+                "Void Rhythm",
+                "Violet Beacon",
+                "Quantum Heart",
+                "Midnight Pulse"
+            ]
+        },
+        {
+            id: "quasar",
+            name: "Quasar",
+            odds: 1000,
+            color: "#ff6acb",
+            reward: 1800,
+            stars: [
+                "Eternal Radiance",
+                "Rose Nebula",
+                "Heaven's Signal",
+                "Divine Spectrum"
+            ]
+        },
+        {
+            id: "supernova",
+            name: "Supernova",
+            odds: 10000,
+            color: "#ffd56c",
+            reward: 18000,
+            stars: [
+                "Golden Cataclysm",
+                "Kingdom of Suns",
+                "Last Horizon",
+                "Celestial Rupture"
+            ]
+        },
+        {
+            id: "singularity",
+            name: "Singularity",
+            odds: 100000,
+            color: "#ffffff",
+            reward: 180000,
+            stars: [
+                "Event Horizon",
+                "The Devourer",
+                "Absolute Zero",
+                "End of Time"
+            ]
+        },
+        {
+            id: "secret",
+            name: "???",
+            odds: 1000000,
+            color: "#ff73e6",
+            reward: 2000000,
+            stars: [
+                "The First Star",
+                "Beyond Infinity",
+                "Genesis Eternal",
+                "The Final Creation"
+            ]
+        }
+    ],
+
+    upgrades: {
+        luck: {
+            name: "Luck Boost",
+            icon: "🍀",
+            description: "Increase the weight of rare stars during forging.",
+            baseCost: 100,
+            scaling: 1.55,
+            maxLevel: 100
+        },
+
+        forgeSpeed: {
+            name: "Faster Forge",
+            icon: "⚡",
+            description: "Reduce the cooldown between manual and automatic forges.",
+            baseCost: 150,
+            scaling: 1.6,
+            maxLevel: 20
+        },
+
+        autoSpeed: {
+            name: "Auto-Forge Speed",
+            icon: "⏩",
+            description: "Reduce the automatic forge interval.",
+            baseCost: 250,
+            scaling: 1.65,
+            maxLevel: 20
+        },
+
+        doubleDust: {
+            name: "Double Stardust",
+            icon: "💎",
+            description: "Each level doubles Stardust earned from forging.",
+            baseCost: 500,
+            scaling: 3,
+            maxLevel: 8
+        },
+
+        luckyStreak: {
+            name: "Lucky Streak",
+            icon: "🌠",
+            description: "Unlock and strengthen a temporary burst of cosmic luck.",
+            baseCost: 1200,
+            scaling: 2.1,
+            maxLevel: 10
+        }
+    },
+
+    rebirthBaseCost: 250000,
+
+    rebirthScaling: 2.5,
+
+    rebirthLuckBonus: 0.5,
+
+    streakThreshold: 3,
+
+    luckyBuffDuration: 20000,
+
+    luckyBuffCooldown: 120000,
+
+    autoSaveInterval: 10000
+};
+
+/* ============================================================
+   GAME STATE
+   ============================================================ */
+
+function defaultState() {
+    return {
+        version: 1,
+
+        stardust: 0,
+        totalDustEarned: 0,
+        totalForges: 0,
+
+        collection: {},
+
+        upgrades: {
+            luck: 0,
+            forgeSpeed: 0,
+            autoSpeed: 0,
+            doubleDust: 0,
+            luckyStreak: 0
+        },
+
+        rebirths: 0,
+
+        streak: 0,
+        bestStreak: 0,
+
+        rarestTier: -1,
+
+        achievements: [],
+
+        history: [],
+
+        playTime: 0,
+
+        muted: false,
+
+        autoEnabled: false,
+        autoInterval: 1200,
+
+        buffEnd: 0,
+        buffCooldownEnd: 0
+    };
+}
+
+let state = defaultState();
+
+let lastForgeTime = -Infinity;
+let forgeBusy = false;
+let forgeQueue = false;
+let nextAutoTime = 0;
+let lastFrameTime = performance.now();
+let lastUiUpdate = 0;
+let currentPage = "forge";
+
+let audioContext = null;
+
+/* ============================================================
+   UTILITIES
+   ============================================================ */
+
+const $ = id => document.getElementById(id);
+
+function clamp(value, min, max) {
+    return Math.min(max, Math.max(min, value));
+}
+
+function finiteNumber(value, fallback = 0) {
+    return typeof value === "number" && Number.isFinite(value)
+        ? value
+        : fallback;
+}
+
+function formatNumber(number) {
+    number = finiteNumber(number);
+
+    if (number < 1000) {
+        return Math.floor(number).toLocaleString("en-US");
+    }
+
+    const suffixes = [
+        ["Qa", 1e15],
+        ["T", 1e12],
+        ["B", 1e9],
+        ["M", 1e6],
+        ["K", 1e3]
+    ];
+
+    for (const [suffix, value] of suffixes) {
+        if (number >= value) {
+            const scaled = number / value;
+
+            return scaled.toFixed(scaled < 10 ? 1 : 0)
+                .replace(/\.0$/, "") + suffix;
+        }
+    }
+
+    return Math.floor(number).toLocaleString("en-US");
+}
+
+function formatTime(seconds) {
+    seconds = Math.max(0, Math.floor(seconds));
+
+    const days = Math.floor(seconds / 86400);
+    const hours = Math.floor((seconds % 86400) / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+
+    if (days) return `${days}d ${hours}h ${minutes}m`;
+    if (hours) return `${hours}h ${minutes}m ${secs}s`;
+    if (minutes) return `${minutes}m ${secs}s`;
+
+    return `${secs}s`;
+}
+
+function escapeHTML(value) {
+    return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+}
+
+function randomItem(array) {
+    return array[Math.floor(Math.random() * array.length)];
+}
+
+function getStarId(tierIndex, starIndex) {
+    return `${tierIndex}_${starIndex}`;
+}
+
+function getDiscoveredCount() {
+    return Object.values(state.collection)
+        .filter(count => count > 0).length;
+}
+
+function getTotalStars() {
+    return CONFIG.rarity.reduce(
+        (total, tier) => total + tier.stars.length,
+        0
+    );
+}
+
+/* ============================================================
+   LUCK SYSTEM
+
+   Luck boosts rarer tiers more strongly.
+
+   Dust receives no bonus.
+   Higher tiers receive increasingly strong weighting.
+
+   This maintains rarity progression without allowing
+   luck to trivially guarantee the rarest stars.
+   ============================================================ */
+
+function getLuck() {
+    const upgradeLuck = state.upgrades.luck * 0.12;
+
+    const rebirthLuck =
+        state.rebirths * CONFIG.rebirthLuckBonus;
+
+    const temporaryLuck =
+        Date.now() < state.buffEnd
+            ? 1.5 + state.upgrades.luckyStreak * 0.5
+            : 0;
+
+    return 1 + upgradeLuck + rebirthLuck + temporaryLuck;
+}
+
+function getTierWeight(tierIndex) {
+    const tier = CONFIG.rarity[tierIndex];
+
+    const baseWeight = 1 / tier.odds;
+
+    if (tierIndex === 0) {
+        return baseWeight;
+    }
+
+    const luck = getLuck();
+
+    const rarityFactor = tierIndex / (CONFIG.rarity.length - 1);
+
+    const exponent = 0.35 + rarityFactor * 0.65;
+
+    return baseWeight * Math.pow(luck, exponent);
+}
+
+function rollTier() {
+    const weights = CONFIG.rarity.map(
+        (_, index) => getTierWeight(index)
+    );
+
+    const totalWeight = weights.reduce(
+        (sum, weight) => sum + weight,
+        0
+    );
+
+    let roll = Math.random() * totalWeight;
+
+    for (let i = 0; i < weights.length; i++) {
+        roll -= weights[i];
+
+        if (roll < 0) {
+            return i;
+        }
+    }
+
+    return weights.length - 1;
+}
+
+function rollStar() {
+    const tierIndex = rollTier();
+
+    const tier = CONFIG.rarity[tierIndex];
+
+    const starIndex = Math.floor(
+        Math.random() * tier.stars.length
+    );
+
+    return {
+        tierIndex,
+        starIndex,
+        tier,
+        name: tier.stars[starIndex],
+        id: getStarId(tierIndex, starIndex)
+    };
+}
+
+/* ============================================================
+   FORGE SPEED
+   ============================================================ */
+
+function getForgeCooldown() {
+    return Math.max(
+        CONFIG.minimumCooldown,
+        CONFIG.baseCooldown *
+        Math.pow(0.89, state.upgrades.forgeSpeed)
+    );
+}
+
+function getAutoInterval() {
+    const upgradeFactor =
+        Math.pow(0.88, state.upgrades.autoSpeed);
+
+    return Math.max(
+        CONFIG.minimumCooldown,
+        state.autoInterval * upgradeFactor
+    );
+}
+
+/* ============================================================
+   STARDUST
+   ============================================================ */
+
+function getDustReward(tier) {
+    const multiplier =
+        Math.pow(2, state.upgrades.doubleDust);
+
+    return tier.reward * multiplier;
+}
+
+/* ============================================================
+   SOUND ENGINE — WEB AUDIO API
+   ============================================================ */
+
+function initAudio() {
+    if (state.muted) return;
+
+    try {
+        if (!audioContext) {
+            const AudioContextClass =
+                window.AudioContext ||
+                window.webkitAudioContext;
+
+            if (!AudioContextClass) return;
+
+            audioContext = new AudioContextClass();
+        }
+
+        if (audioContext.state === "suspended") {
+            audioContext.resume().catch(() => {});
+        }
+    } catch (error) {
+        console.warn("Audio unavailable:", error);
+    }
+}
+
+function playTone(frequency, duration, type = "sine", volume = .08, delay = 0) {
+    if (state.muted || !audioContext) return;
+
+    try {
+        const now = audioContext.currentTime + delay;
+
+        const oscillator = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+
+        oscillator.type = type;
+
+        oscillator.frequency.setValueAtTime(
+            frequency,
+            now
+        );
+
+        oscillator.frequency.exponentialRampToValueAtTime(
+            Math.max(40, frequency * .65),
+            now + duration
+        );
+
+        gain.gain.setValueAtTime(.0001, now);
+
+        gain.gain.exponentialRampToValueAtTime(
+            Math.max(.0002, volume),
+            now + .015
+        );
+
+        gain.gain.exponentialRampToValueAtTime(
+            .0001,
+            now + duration
+        );
+
+        oscillator.connect(gain);
+        gain.connect(audioContext.destination);
+
+        oscillator.start(now);
+        oscillator.stop(now + duration + .02);
+
+    } catch (error) {
+        console.warn("Sound error:", error);
+    }
+}
+
+function playForgeSound() {
+    playTone(190, .12, "triangle", .045);
+    playTone(310, .15, "sine", .035, .07);
+}
+
+function playRevealSound(tierIndex) {
+    const base = 230 + tierIndex * 70;
+
+    const notes = Math.min(2 + tierIndex, 8);
+
+    for (let i = 0; i < notes; i++) {
+        playTone(
+            base * Math.pow(1.13, i),
+            .22 + tierIndex * .045,
+            tierIndex >= 5 ? "sawtooth" : "sine",
+            Math.min(.09, .035 + tierIndex * .006),
+            i * .085
+        );
+    }
+
+    if (tierIndex >= 7) {
+        playTone(75, 1.4, "triangle", .13);
+    }
+}
+
+/* ============================================================
+   REVEAL EFFECTS
+   ============================================================ */
+
+function triggerFlash(color, tierIndex) {
+    if (tierIndex < 3) return;
+
+    const flash = $("flash");
+
+    flash.style.background = color;
+
+    flash.style.animationDuration =
+        tierIndex >= 7 ? "1s" : ".55s";
+
+    flash.classList.remove("active");
+
+    void flash.offsetWidth;
+
+    flash.classList.add("active");
+
+    if (tierIndex >= 5) {
+        document.body.classList.remove("shake");
+
+        void document.body.offsetWidth;
+
+        document.body.classList.add("shake");
+
+        setTimeout(() => {
+            document.body.classList.remove("shake");
+        }, 450);
+    }
+}
+
+function showCinematic(star) {
+    const cinematic = $("cinematic");
+
+    cinematic.style.setProperty(
+        "--cinema-color",
+        star.tier.color
+    );
+
+    $("cinematicName").textContent = star.name;
+
+    $("cinematicTier").textContent = star.tier.name;
+
+    $("cinematicOdds").textContent =
+        `BASE RARITY · 1 IN ${star.tier.odds.toLocaleString()}`;
+
+    $("cinematicName").classList.toggle(
+        "rainbow-text",
+        star.tierIndex === 8
+    );
+
+    cinematic.classList.add("active");
+
+    setTimeout(() => {
+        cinematic.classList.remove("active");
+    }, star.tierIndex === 8 ? 5000 : 3500);
+}
+
+function updateStarVisual(star) {
+    const object = $("starObject");
+
+    object.className = "star-object";
+
+    object.style.setProperty(
+        "--star-color",
+        star.tier.color
+    );
+
+    if (star.tierIndex === 7) {
+        object.classList.add("singularity");
+    }
+
+    if (star.tierIndex === 8) {
+        object.classList.add("secret");
+    }
+
+    $("resultName").textContent = star.name;
+
+    $("resultName").style.color =
+        star.tier.color;
+
+    $("resultName").classList.toggle(
+        "rainbow-text",
+        star.tierIndex === 8
+    );
+
+    $("resultTier").textContent =
+        star.tier.name.toUpperCase();
+
+    $("resultTier").style.color =
+        star.tier.color;
+
+    $("resultOdds").textContent =
+        `Base rarity: 1 in ${star.tier.odds.toLocaleString()}`;
+}
+
+/* ============================================================
+   FORGING ENGINE
+
+   The RNG result is calculated immediately.
+
+   The reveal animation runs separately.
+
+   Input locking prevents overlapping manual and auto rolls.
+   ============================================================ */
+
+function canForge() {
+    return !forgeBusy &&
+        performance.now() - lastForgeTime >= getForgeCooldown();
+}
+
+function beginForge() {
+    if (!canForge()) return false;
+
+    initAudio();
+
+    forgeBusy = true;
+    forgeQueue = false;
+
+    lastForgeTime = performance.now();
+
+    $("forgeButton").disabled = true;
+    $("forgeButton").textContent = "FORGING...";
+
+    $("starObject").classList.add("rolling");
+
+    playForgeSound();
+
+    const result = rollStar();
+
+    const animationDuration = Math.min(
+        500,
+        Math.max(100, getForgeCooldown() * .35)
+    );
+
+    const start = performance.now();
+
+    let lastShuffle = 0;
+
+    function animate(now) {
+        if (!forgeBusy) return;
+
+        const elapsed = now - start;
+
+        if (elapsed - lastShuffle > 45) {
+            lastShuffle = elapsed;
+
+            const fakeTier = randomItem(CONFIG.rarity);
+
+            $("resultName").textContent =
+                randomItem(fakeTier.stars);
+
+            $("resultTier").textContent =
+                "FORGING...";
+
+            $("resultTier").style.color =
+                fakeTier.color;
+        }
+
+        if (elapsed < animationDuration) {
+            requestAnimationFrame(animate);
+        } else {
+            finishForge(result);
+        }
+    }
+
+    requestAnimationFrame(animate);
+
+    return true;
+}
+
+function finishForge(star) {
+    const previousCount =
+        state.collection[star.id] || 0;
+
+    state.collection[star.id] =
+        previousCount + 1;
+
+    state.totalForges++;
+
+    const reward = getDustReward(star.tier);
+
+    state.stardust += reward;
+    state.totalDustEarned += reward;
+
+    if (star.tierIndex >= CONFIG.streakThreshold) {
+        state.streak++;
+    } else {
+        state.streak = 0;
+    }
+
+    state.bestStreak = Math.max(
+        state.bestStreak,
+        state.streak
+    );
+
+    state.rarestTier = Math.max(
+        state.rarestTier,
+        star.tierIndex
+    );
+
+    state.history.unshift({
+        name: star.name,
+        tierIndex: star.tierIndex,
+        reward,
+        time: Date.now()
+    });
+
+    state.history = state.history.slice(0, 10);
+
+    $("starObject").classList.remove("rolling");
+
+    updateStarVisual(star);
+
+    triggerFlash(star.tier.color, star.tierIndex);
+
+    playRevealSound(star.tierIndex);
+
+    if (star.tierIndex >= 7) {
+        showCinematic(star);
+    }
+
+    if (previousCount === 0) {
+        notify(
+            "✦ New Star Discovered!",
+            `${star.name} · ${star.tier.name}`
+        );
+    }
+
+    if (star.tierIndex >= 6) {
+        notify(
+            "Extraordinary Forge!",
+            `${star.name} · +${formatNumber(reward)} Stardust`
+        );
+    }
+
+    forgeBusy = false;
+
+    $("forgeButton").textContent = "✦ FORGE";
+
+    checkAchievements();
+
+    updateUI();
+
+    saveGame();
+}
+
+/* ============================================================
+   AUTO FORGE
+   ============================================================ */
+
+function updateAutoForge(now) {
+    if (!state.autoEnabled) return;
+
+    if (now < nextAutoTime) return;
+
+    if (canForge()) {
+        beginForge();
+
+        nextAutoTime = now + getAutoInterval();
+    }
+}
+
+function toggleAutoForge(enabled) {
+    state.autoEnabled = enabled;
+
+    $("autoToggle").checked = enabled;
+
+    nextAutoTime = performance.now();
+
+    saveGame();
+}
+
+/* ============================================================
+   UPGRADE SHOP
+   ============================================================ */
+
+function getUpgradeCost(id) {
+    const config = CONFIG.upgrades[id];
+
+    const level = state.upgrades[id];
+
+    return Math.floor(
+        config.baseCost *
+        Math.pow(config.scaling, level)
+    );
+}
+
+function buyUpgrade(id) {
+    const config = CONFIG.upgrades[id];
+
+    if (!config) return;
+
+    const level = state.upgrades[id];
+
+    if (level >= config.maxLevel) return;
+
+    const cost = getUpgradeCost(id);
+
+    if (state.stardust < cost) {
+        notify(
+            "Not Enough Stardust",
+            `You need ${formatNumber(cost)} Stardust.`
+        );
+
+        return;
+    }
+
+    state.stardust -= cost;
+
+    state.upgrades[id]++;
+
+    playTone(550, .2, "sine", .06);
+    playTone(820, .3, "sine", .05, .12);
+
+    notify(
+        "Upgrade Purchased",
+        `${config.name} · Level ${state.upgrades[id]}`
+    );
+
+    checkAchievements();
+
+    updateUI();
+
+    saveGame();
+}
+
+function renderShop() {
+    const container = $("shopGrid");
+
+    container.innerHTML = "";
+
+    for (const [id, config] of Object.entries(CONFIG.upgrades)) {
+        const level = state.upgrades[id];
+
+        const maxed = level >= config.maxLevel;
+
+        const cost = getUpgradeCost(id);
+
+        const card = document.createElement("div");
+
+        card.className = "panel shop-card";
+
+        card.innerHTML = `
+            <div class="shop-icon">${config.icon}</div>
+            <h3>${escapeHTML(config.name)}</h3>
+            <p>${escapeHTML(config.description)}</p>
+            <div class="level">
+                LEVEL ${level} / ${config.maxLevel}
+            </div>
+            <button
+                class="primary-button"
+                ${maxed || state.stardust < cost ? "disabled" : ""}
+            >
+                ${maxed ? "MAX LEVEL" : `BUY · ${formatNumber(cost)} ✦`}
+            </button>
+        `;
+
+        card.querySelector("button").addEventListener(
+            "click",
+            () => buyUpgrade(id)
+        );
+
+        container.appendChild(card);
+    }
+}
+
+/* ============================================================
+   LUCKY STREAK
+   ============================================================ */
+
+function activateLuckyStreak() {
+    if (state.upgrades.luckyStreak < 1) {
+        notify(
+            "Upgrade Required",
+            "Purchase Lucky Streak in the shop first."
+        );
+
+        return;
+    }
+
+    const now = Date.now();
+
+    if (now < state.buffEnd) return;
+
+    if (now < state.buffCooldownEnd) return;
+
+    state.buffEnd =
+        now + CONFIG.luckyBuffDuration;
+
+    state.buffCooldownEnd =
+        now + CONFIG.luckyBuffCooldown;
+
+    notify(
+        "🌠 Lucky Streak Activated",
+        "Your cosmic luck has temporarily increased!"
+    );
+
+    playTone(650, .4, "sine", .07);
+    playTone(950, .6, "sine", .07, .15);
+
+    updateUI();
+
+    saveGame();
+}
+
+/* ============================================================
+   REBIRTH
+   ============================================================ */
+
+function getRebirthCost() {
+    return Math.floor(
+        CONFIG.rebirthBaseCost *
+        Math.pow(CONFIG.rebirthScaling, state.rebirths)
+    );
+}
+
+function collapseUniverse() {
+    const cost = getRebirthCost();
+
+    if (state.stardust < cost) {
+        notify(
+            "Collapse Unavailable",
+            `Reach ${formatNumber(cost)} Stardust first.`
+        );
+
+        return;
+    }
+
+    const confirmed = confirm(
+        "COLLAPSE UNIVERSE?\n\n" +
+        "This resets your Stardust, purchased upgrades, " +
+        "and current streak.\n\n" +
+        "Your collection, achievements, lifetime statistics, " +
+        "and permanent Luck will remain.\n\n" +
+        "Continue?"
+    );
+
+    if (!confirmed) return;
+
+    const preserved = {
+        collection: state.collection,
+        achievements: state.achievements,
+        totalForges: state.totalForges,
+        totalDustEarned: state.totalDustEarned,
+        bestStreak: state.bestStreak,
+        rarestTier: state.rarestTier,
+        playTime: state.playTime,
+        muted: state.muted,
+        rebirths: state.rebirths + 1
+    };
+
+    state = {
+        ...defaultState(),
+        ...preserved
+    };
+
+    forgeBusy = false;
+    lastForgeTime = -Infinity;
+    nextAutoTime = performance.now();
+
+    $("autoToggle").checked = false;
+
+    $("starObject").className = "star-object";
+
+    $("resultName").textContent = "Universe Reborn";
+
+    $("resultName").style.color = "#ffd36d";
+
+    $("resultTier").textContent = "COSMIC REBIRTH";
+
+    $("resultTier").style.color = "#ffd36d";
+
+    $("resultOdds").textContent =
+        "Permanent Luck increased!";
+
+    notify(
+        "✦ Universe Collapsed",
+        `Permanent Luck increased by ${CONFIG.rebirthLuckBonus.toFixed(2)}x!`
+    );
+
+    playTone(110, 1.5, "sine", .13);
+    playTone(440, 1.5, "sine", .08, .2);
+
+    checkAchievements();
+
+    updateUI();
+
+    saveGame();
+}
+
+/* ============================================================
+   ACHIEVEMENTS
+   ============================================================ */
+
+const ACHIEVEMENTS = [
+    {
+        id: "first",
+        icon: "✦",
+        name: "First Forge",
+        description: "Forge your first star.",
+        test: () => state.totalForges >= 1
+    },
+    {
+        id: "hundred",
+        icon: "⚒️",
+        name: "Apprentice Blacksmith",
+        description: "Forge 100 stars.",
+        test: () => state.totalForges >= 100
+    },
+    {
+        id: "thousand",
+        icon: "🌌",
+        name: "Cosmic Craftsman",
+        description: "Forge 1,000 stars.",
+        test: () => state.totalForges >= 1000
+    },
+    {
+        id: "tenThousand",
+        icon: "🌠",
+        name: "Master of Creation",
+        description: "Forge 10,000 stars.",
+        test: () => state.totalForges >= 10000
+    },
+    {
+        id: "nova",
+        icon: "💠",
+        name: "Blue Awakening",
+        description: "Discover a Nova.",
+        test: () => state.rarestTier >= 3
+    },
+    {
+        id: "pulsar",
+        icon: "🔮",
+        name: "Rhythm of Space",
+        description: "Discover a Pulsar.",
+        test: () => state.rarestTier >= 4
+    },
+    {
+        id: "quasar",
+        icon: "💗",
+        name: "Beyond the Light",
+        description: "Discover a Quasar.",
+        test: () => state.rarestTier >= 5
+    },
+    {
+        id: "supernova",
+        icon: "☀️",
+        name: "The Golden Explosion",
+        description: "Discover a Supernova.",
+        test: () => state.rarestTier >= 6
+    },
+    {
+        id: "singularity",
+        icon: "⚫",
+        name: "The End of Everything",
+        description: "Discover a Singularity.",
+        test: () => state.rarestTier >= 7
+    },
+    {
+        id: "secret",
+        icon: "🌈",
+        name: "Impossible Creation",
+        description: "Discover a secret star.",
+        test: () => state.rarestTier >= 8
+    },
+    {
+        id: "collector",
+        icon: "📚",
+        name: "Star Collector",
+        description: "Discover 12 unique stars.",
+        test: () => getDiscoveredCount() >= 12
+    },
+    {
+        id: "completion",
+        icon: "👑",
+        name: "The Entire Universe",
+        description: "Discover every star.",
+        test: () => getDiscoveredCount() >= getTotalStars()
+    },
+    {
+        id: "wealth",
+        icon: "💎",
+        name: "Stardust Millionaire",
+        description: "Earn 1 million lifetime Stardust.",
+        test: () => state.totalDustEarned >= 1000000
+    },
+    {
+        id: "rebirth",
+        icon: "♻️",
+        name: "A New Beginning",
+        description: "Collapse your universe once.",
+        test: () => state.rebirths >= 1
+    },
+    {
+        id: "rebirthFive",
+        icon: "🌍",
+        name: "Eternal Cycle",
+        description: "Collapse your universe five times.",
+        test: () => state.rebirths >= 5
+    },
+    {
+        id: "streak",
+        icon: "🔥",
+        name: "Lucky Chain",
+        description: "Forge three Nova-or-better stars consecutively.",
+        test: () => state.bestStreak >= 3
+    }
+];
+
+function checkAchievements(silent = false) {
+    for (const achievement of ACHIEVEMENTS) {
+        if (state.achievements.includes(achievement.id)) {
+            continue;
+        }
+
+        if (achievement.test()) {
+            state.achievements.push(achievement.id);
+
+            if (!silent) {
+                notify(
+                    `🏆 ${achievement.name}`,
+                    achievement.description
+                );
+
+                playTone(800, .35, "sine", .07);
+                playTone(1100, .45, "sine", .07, .2);
+            }
+        }
+    }
+}
+
+function renderAchievements() {
+    const container = $("achievementGrid");
+
+    container.innerHTML = "";
+
+    for (const achievement of ACHIEVEMENTS) {
+        const unlocked =
+            state.achievements.includes(achievement.id);
+
+        const card = document.createElement("div");
+
+        card.className =
+            "panel achievement-card" +
+            (unlocked ? "" : " locked");
+
+        card.innerHTML = `
+            <div class="achievement-icon">
+                ${unlocked ? achievement.icon : "🔒"}
+            </div>
+
+            <div>
+                <h3>${escapeHTML(achievement.name)}</h3>
+                <p>${escapeHTML(achievement.description)}</p>
+                <small>
+                    ${unlocked ? "✓ UNLOCKED" : "LOCKED"}
+                </small>
+            </div>
+        `;
+
+        container.appendChild(card);
+    }
+}
+
+/* ============================================================
+   COLLECTION INDEX
+   ============================================================ */
+
+function renderCollection() {
+    const container = $("collectionContainer");
+
+    const search =
+        $("collectionSearch").value.toLowerCase().trim();
+
+    const filter =
+        $("collectionFilter").value;
+
+    container.innerHTML = "";
+
+    CONFIG.rarity.forEach((tier, tierIndex) => {
+        const section = document.createElement("div");
+
+        section.className = "tier-section";
+
+        section.style.setProperty(
+            "--tier-color",
+            tier.color
+        );
+
+        const heading = document.createElement("div");
+
+        heading.className = "tier-heading";
+
+        const discoveredInTier =
+            tier.stars.filter((_, starIndex) => {
+                const id = getStarId(tierIndex, starIndex);
+
+                return (state.collection[id] || 0) > 0;
+            }).length;
+
+        heading.innerHTML = `
+            <div class="tier-dot"></div>
+            <h3 style="color:${tier.color}">
+                ${escapeHTML(tier.name)}
+            </h3>
+            <small>
+                1 in ${tier.odds.toLocaleString()}
+                · ${discoveredInTier}/${tier.stars.length}
+            </small>
+        `;
+
+        section.appendChild(heading);
+
+        const grid = document.createElement("div");
+
+        grid.className = "collection-grid";
+
+        tier.stars.forEach((name, starIndex) => {
+            const id = getStarId(tierIndex, starIndex);
+
+            const count = state.collection[id] || 0;
+
+            const found = count > 0;
+
+            if (filter === "found" && !found) return;
+            if (filter === "missing" && found) return;
+
+            if (search) {
+                if (!found) return;
+
+                if (!name.toLowerCase().includes(search)) {
+                    return;
+                }
+            }
+
+            const card = document.createElement("div");
+
+            card.className =
+                "star-card" + (found ? " found" : " locked");
+
+            card.style.setProperty(
+                "--tier-color",
+                tier.color
+            );
+
+            card.innerHTML = `
+                <div class="mini-star"></div>
+
+                <h4>
+                    ${found ? escapeHTML(name) : "???"}
+                </h4>
+
+                <small>
+                    ${found ? escapeHTML(tier.name) : "UNDISCOVERED"}
+                </small>
+
+                <small>
+                    ${found ? `Forged ${formatNumber(count)} times` : "Unknown Star"}
+                </small>
+            `;
+
+            grid.appendChild(card);
+        });
+
+        if (grid.children.length > 0) {
+            section.appendChild(grid);
+            container.appendChild(section);
+        }
+    });
+
+    if (!container.children.length) {
+        container.innerHTML = `
+            <div class="panel panel-body muted">
+                No stars match your search.
+            </div>
+        `;
+    }
+}
+
+/* ============================================================
+   HISTORY
+   ============================================================ */
+
+function renderHistory() {
+    const container = $("historyList");
+
+    if (!state.history.length) {
+        container.innerHTML = `
+            <p class="muted small">
+                Your cosmic journey begins here.
+            </p>
+        `;
+
+        return;
+    }
+
+    container.innerHTML = "";
+
+    for (const entry of state.history) {
+        const tier = CONFIG.rarity[entry.tierIndex];
+
+        if (!tier) continue;
+
+        const item = document.createElement("div");
+
+        item.className = "history-item";
+
+        item.style.setProperty(
+            "--item-color",
+            tier.color
+        );
+
+        item.innerHTML = `
+            <div>
+                <strong>${escapeHTML(entry.name)}</strong>
+                <small>${escapeHTML(tier.name)}</small>
+            </div>
+
+            <span>+${formatNumber(entry.reward)} ✦</span>
+        `;
+
+        container.appendChild(item);
+    }
+}
+
+/* ============================================================
+   STATS
+   ============================================================ */
+
+function renderStats() {
+    const rarest =
+        state.rarestTier >= 0
+            ? CONFIG.rarity[state.rarestTier].name
+            : "None";
+
+    const stats = [
+        ["Total Forges", formatNumber(state.totalForges)],
+        ["Current Stardust", formatNumber(state.stardust)],
+        ["Lifetime Stardust", formatNumber(state.totalDustEarned)],
+        ["Rarest Tier Found", rarest],
+        ["Unique Stars", `${getDiscoveredCount()} / ${getTotalStars()}`],
+        ["Current Streak", formatNumber(state.streak)],
+        ["Best Streak", formatNumber(state.bestStreak)],
+        ["Play Time", formatTime(state.playTime)],
+        ["Universe Collapses", formatNumber(state.rebirths)],
+        ["Current Luck", `${getLuck().toFixed(2)}x`],
+        ["Forge Cooldown", `${(getForgeCooldown() / 1000).toFixed(2)}s`],
+        ["Achievements", `${state.achievements.length} / ${ACHIEVEMENTS.length}`]
+    ];
+
+    $("statsGrid").innerHTML = stats.map(([label, value]) => `
+        <div class="panel stat-card">
+            <small>${escapeHTML(label)}</small>
+            <strong>${escapeHTML(value)}</strong>
+        </div>
+    `).join("");
+}
+
+/* ============================================================
+   NOTIFICATIONS
+   ============================================================ */
+
+function notify(title, message) {
+    const container = $("notifications");
+
+    const notification = document.createElement("div");
+
+    notification.className = "notification";
+
+    notification.innerHTML = `
+        <strong>${escapeHTML(title)}</strong>
+        <small>${escapeHTML(message)}</small>
+    `;
+
+    container.appendChild(notification);
+
+    while (container.children.length > 4) {
+        container.firstChild.remove();
+    }
+
+    setTimeout(() => {
+        notification.style.transition = ".3s";
+        notification.style.opacity = "0";
+        notification.style.transform = "translateX(40px)";
+
+        setTimeout(() => {
+            notification.remove();
+        }, 300);
+    }, 3500);
+}
+
+/* ============================================================
+   SAVE / LOAD
+
+   Save data is validated and sanitized before use.
+
+   Invalid or corrupted fields are replaced with safe defaults.
+   ============================================================ */
+
+function saveGame() {
+    try {
+        localStorage.setItem(
+            CONFIG.saveKey,
+            JSON.stringify(state)
+        );
+    } catch (error) {
+        console.warn("Could not save game:", error);
+    }
+}
+
+function safeInteger(value, fallback = 0, max = 1e15) {
+    if (typeof value !== "number" || !Number.isFinite(value)) {
+        return fallback;
+    }
+
+    return Math.floor(clamp(value, 0, max));
+}
+
+function loadGame() {
+    let raw;
+
+    try {
+        raw = localStorage.getItem(CONFIG.saveKey);
+
+        if (!raw) return;
+
+        const parsed = JSON.parse(raw);
+
+        if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+            throw new Error("Invalid save structure");
+        }
+
+        const defaults = defaultState();
+
+        const clean = defaultState();
+
+        clean.stardust =
+            safeInteger(parsed.stardust);
+
+        clean.totalDustEarned =
+            safeInteger(parsed.totalDustEarned);
+
+        clean.totalForges =
+            safeInteger(parsed.totalForges);
+
+        clean.rebirths =
+            safeInteger(parsed.rebirths, 0, 1000000);
+
+        clean.streak =
+            safeInteger(parsed.streak);
+
+        clean.bestStreak =
+            safeInteger(parsed.bestStreak);
+
+        clean.rarestTier =
+            typeof parsed.rarestTier === "number"
+                ? clamp(Math.floor(parsed.rarestTier), -1, 8)
+                : -1;
+
+        clean.playTime =
+            safeInteger(parsed.playTime);
+
+        clean.muted =
+            parsed.muted === true;
+
+        clean.autoEnabled =
+            parsed.autoEnabled === true;
+
+        const allowedIntervals = [2000, 1200, 700, 350, 150];
+
+        clean.autoInterval =
+            allowedIntervals.includes(parsed.autoInterval)
+                ? parsed.autoInterval
+                : 1200;
+
+        clean.buffEnd =
+            safeInteger(parsed.buffEnd, 0, 1e16);
+
+        clean.buffCooldownEnd =
+            safeInteger(parsed.buffCooldownEnd, 0, 1e16);
+
+        if (
+            parsed.upgrades &&
+            typeof parsed.upgrades === "object"
+        ) {
+            for (const id of Object.keys(defaults.upgrades)) {
+                clean.upgrades[id] = safeInteger(
+                    parsed.upgrades[id],
+                    0,
+                    CONFIG.upgrades[id].maxLevel
+                );
+            }
+        }
+
+        if (
+            parsed.collection &&
+            typeof parsed.collection === "object"
+        ) {
+            CONFIG.rarity.forEach((tier, tierIndex) => {
+                tier.stars.forEach((_, starIndex) => {
+                    const id = getStarId(tierIndex, starIndex);
+
+                    const count = safeInteger(
+                        parsed.collection[id]
+                    );
+
+                    if (count > 0) {
+                        clean.collection[id] = count;
+                    }
+                });
+            });
+        }
+
+        if (Array.isArray(parsed.achievements)) {
+            const validIds = new Set(
+                ACHIEVEMENTS.map(a => a.id)
+            );
+
+            clean.achievements = [
+                ...new Set(
+                    parsed.achievements.filter(
+                        id => typeof id === "string" &&
+                            validIds.has(id)
+                    )
+                )
+            ];
+        }
+
+        if (Array.isArray(parsed.history)) {
+            clean.history = parsed.history
+                .filter(entry => {
+                    return entry &&
+                        typeof entry.name === "string" &&
+                        Number.isInteger(entry.tierIndex) &&
+                        entry.tierIndex >= 0 &&
+                        entry.tierIndex < CONFIG.rarity.length;
+                })
+                .slice(0, 10)
+                .map(entry => ({
+                    name: entry.name.slice(0, 100),
+                    tierIndex: entry.tierIndex,
+                    reward: safeInteger(entry.reward),
+                    time: safeInteger(entry.time, 0, 1e16)
+                }));
+        }
+
+        clean.bestStreak = Math.max(
+            clean.bestStreak,
+            clean.streak
+        );
+
+        clean.totalDustEarned = Math.max(
+            clean.totalDustEarned,
+            clean.stardust
+        );
+
+        CONFIG.rarity.forEach((tier, tierIndex) => {
+            tier.stars.forEach((_, starIndex) => {
+                const id = getStarId(tierIndex, starIndex);
+
+                if (clean.collection[id] > 0) {
+                    clean.rarestTier = Math.max(
+                        clean.rarestTier,
+                        tierIndex
+                    );
+                }
+            });
+        });
+
+        state = clean;
+
+    } catch (error) {
+        console.warn("Save data corrupted. Starting fresh.", error);
+
+        state = defaultState();
+    }
+}
+
+function resetSave() {
+    const confirmed = confirm(
+        "RESET ALL STARFORGE PROGRESS?\n\n" +
+        "This permanently deletes your collection, upgrades, " +
+        "Stardust, achievements, and statistics.\n\n" +
+        "This cannot be undone."
+    );
+
+    if (!confirmed) return;
+
+    try {
+        localStorage.removeItem(CONFIG.saveKey);
+    } catch (error) {
+        console.warn(error);
+    }
+
+    location.reload();
+}
+
+/* ============================================================
+   USER INTERFACE
+   ============================================================ */
+
+function updateHeader() {
+    $("headerDust").textContent =
+        formatNumber(state.stardust);
+
+    $("headerLuck").textContent =
+        `${getLuck().toFixed(2)}x`;
+
+    $("headerForges").textContent =
+        formatNumber(state.totalForges);
+
+    $("muteButton").textContent =
+        state.muted ? "🔇" : "🔊";
+}
+
+function updateForgeControls() {
+    $("quickCollection").textContent =
+        `${getDiscoveredCount()}/${getTotalStars()}`;
+
+    $("cooldownText").textContent =
+        `${(getForgeCooldown() / 1000).toFixed(2)}s`;
+
+    const now = Date.now();
+
+    const buffButton = $("buffButton");
+
+    const buffStatus = $("buffStatus");
+
+    if (state.upgrades.luckyStreak < 1) {
+        buffButton.textContent = "Locked";
+        buffButton.disabled = true;
+
+        buffStatus.textContent =
+            "Unlock in the shop";
+
+    } else if (now < state.buffEnd) {
+        const seconds = Math.ceil(
+            (state.buffEnd - now) / 1000
+        );
+
+        buffButton.textContent = `${seconds}s`;
+        buffButton.disabled = true;
+
+        buffStatus.textContent =
+            "Cosmic luck is active!";
+
+    } else if (now < state.buffCooldownEnd) {
+        const seconds = Math.ceil(
+            (state.buffCooldownEnd - now) / 1000
+        );
+
+        buffButton.textContent =
+            formatTime(seconds);
+
+        buffButton.disabled = true;
+
+        buffStatus.textContent =
+            "Ability recharging";
+
+    } else {
+        buffButton.textContent = "Activate";
+        buffButton.disabled = false;
+
+        buffStatus.textContent =
+            "Ready to activate";
+    }
+}
+
+function updateRebirth() {
+    const cost = getRebirthCost();
+
+    $("rebirthCost").textContent =
+        formatNumber(cost);
+
+    $("rebirthCount").textContent =
+        formatNumber(state.rebirths);
+
+    $("rebirthLuck").textContent =
+        `${(1 + state.rebirths * CONFIG.rebirthLuckBonus).toFixed(2)}x`;
+
+    $("rebirthButton").disabled =
+        state.stardust < cost;
+}
+
+function updateCollectionProgress() {
+    const discovered = getDiscoveredCount();
+
+    const total = getTotalStars();
+
+    const percent =
+        total > 0 ? discovered / total * 100 : 0;
+
+    $("collectionCount").textContent =
+        `${discovered} / ${total} Discovered`;
+
+    $("collectionPercent").textContent =
+        `${percent.toFixed(1)}%`;
+
+    $("collectionProgress").style.width =
+        `${percent}%`;
+}
+
+function updateUI() {
+    updateHeader();
+
+    updateForgeControls();
+
+    updateRebirth();
+
+    updateCollectionProgress();
+
+    renderHistory();
+
+    if (currentPage === "shop") {
+        renderShop();
+    }
+
+    if (currentPage === "collection") {
+        renderCollection();
+    }
+
+    if (currentPage === "stats") {
+        renderStats();
+    }
+
+    if (currentPage === "achievements") {
+        renderAchievements();
+    }
+}
+
+function switchPage(page) {
+    currentPage = page;
+
+    document.querySelectorAll(".tab").forEach(tab => {
+        tab.classList.toggle(
+            "active",
+            tab.dataset.page === page
+        );
+    });
+
+    document.querySelectorAll(".page").forEach(section => {
+        section.classList.toggle(
+            "active",
+            section.id === `page-${page}`
+        );
+    });
+
+    updateUI();
+}
+
+/* ============================================================
+   ANIMATED STARFIELD
+
+   Lightweight canvas particles.
+
+   Device pixel ratio is capped for performance.
+   ============================================================ */
+
+const canvas = $("starfield");
+
+const ctx = canvas.getContext("2d");
+
+let particles = [];
+
+let canvasWidth = 0;
+let canvasHeight = 0;
+
+function resizeStarfield() {
+    const dpr = Math.min(
+        window.devicePixelRatio || 1,
+        2
+    );
+
+    canvasWidth = window.innerWidth;
+    canvasHeight = window.innerHeight;
+
+    canvas.width = Math.floor(canvasWidth * dpr);
+    canvas.height = Math.floor(canvasHeight * dpr);
+
+    canvas.style.width = canvasWidth + "px";
+    canvas.style.height = canvasHeight + "px";
+
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    const count = Math.min(
+        220,
+        Math.floor(canvasWidth * canvasHeight / 6500)
+    );
+
+    particles = Array.from({ length: count }, () => ({
+        x: Math.random() * canvasWidth,
+        y: Math.random() * canvasHeight,
+        radius: .3 + Math.random() * 1.5,
+        speed: .02 + Math.random() * .12,
+        opacity: .15 + Math.random() * .75,
+        phase: Math.random() * Math.PI * 2
+    }));
+}
+
+function drawStarfield(time) {
+    ctx.clearRect(
+        0,
+        0,
+        canvasWidth,
+        canvasHeight
+    );
+
+    for (const particle of particles) {
+        particle.y += particle.speed;
+
+        if (particle.y > canvasHeight + 3) {
+            particle.y = -3;
+            particle.x = Math.random() * canvasWidth;
+        }
+
+        const twinkle =
+            .65 + Math.sin(time * .0015 + particle.phase) * .35;
+
+        ctx.beginPath();
+
+        ctx.arc(
+            particle.x,
+            particle.y,
+            particle.radius,
+            0,
+            Math.PI * 2
+        );
+
+        ctx.fillStyle =
+            `rgba(210,225,255,${particle.opacity * twinkle})`;
+
+        ctx.fill();
+    }
+}
+
+/* ============================================================
+   MAIN GAME LOOP
+   ============================================================ */
+
+function gameLoop(now) {
+    const delta = Math.min(
+        0.25,
+        Math.max(0, (now - lastFrameTime) / 1000)
+    );
+
+    lastFrameTime = now;
+
+    if (!document.hidden) {
+        state.playTime += delta;
+
+        updateAutoForge(now);
+    }
+
+    const elapsed =
+        now - lastForgeTime;
+
+    const cooldown =
+        getForgeCooldown();
+
+    const progress =
+        clamp(elapsed / cooldown, 0, 1);
+
+    $("cooldownFill").style.width =
+        `${progress * 100}%`;
+
+    $("forgeButton").disabled =
+        forgeBusy || progress < 1;
+
+    if (now - lastUiUpdate > 250) {
+        lastUiUpdate = now;
+
+        updateHeader();
+        updateForgeControls();
+
+        if (currentPage === "stats") {
+            renderStats();
+        }
+    }
+
+    drawStarfield(now);
+
+    requestAnimationFrame(gameLoop);
+}
+
+/* ============================================================
+   EVENT LISTENERS
+   ============================================================ */
+
+function setupEvents() {
+
+    document.querySelectorAll(".tab").forEach(tab => {
+        tab.addEventListener("click", () => {
+            switchPage(tab.dataset.page);
+        });
+    });
+
+    $("forgeButton").addEventListener("click", () => {
+        beginForge();
+    });
+
+    document.addEventListener("keydown", event => {
+        if (event.code !== "Space") return;
+
+        const target = event.target;
+
+        if (
+            target instanceof HTMLInputElement ||
+            target instanceof HTMLSelectElement ||
+            target instanceof HTMLTextAreaElement ||
+            target instanceof HTMLButtonElement ||
+            target.isContentEditable
+        ) {
+            return;
+        }
+
+        event.preventDefault();
+
+        if (!event.repeat && currentPage === "forge") {
+            beginForge();
+        }
+    });
+
+    $("autoToggle").addEventListener("change", event => {
+        toggleAutoForge(event.target.checked);
+    });
+
+    $("autoSpeed").addEventListener("change", event => {
+        state.autoInterval =
+            Number(event.target.value);
+
+        nextAutoTime = performance.now();
+
+        saveGame();
+    });
+
+    $("buffButton").addEventListener(
+        "click",
+        activateLuckyStreak
+    );
+
+    $("rebirthButton").addEventListener(
+        "click",
+        collapseUniverse
+    );
+
+    $("collectionSearch").addEventListener(
+        "input",
+        renderCollection
+    );
+
+    $("collectionFilter").addEventListener(
+        "change",
+        renderCollection
+    );
+
+    $("muteButton").addEventListener("click", () => {
+        state.muted = !state.muted;
+
+        if (!state.muted) {
+            initAudio();
+        }
+
+        updateHeader();
+
+        saveGame();
+    });
+
+    $("saveButton").addEventListener("click", () => {
+        saveGame();
+
+        notify(
+            "Progress Saved",
+            "Your universe has been preserved."
+        );
+    });
+
+    $("resetButton").addEventListener(
+        "click",
+        resetSave
+    );
+
+    window.addEventListener(
+        "resize",
+        resizeStarfield
+    );
+
+    document.addEventListener("visibilitychange", () => {
+        lastFrameTime = performance.now();
+
+        if (document.hidden) {
+            saveGame();
+        } else {
+            nextAutoTime = performance.now();
+        }
+    });
+
+    window.addEventListener("pagehide", saveGame);
+
+    window.addEventListener("beforeunload", saveGame);
+}
+
+/* ============================================================
+   INITIALIZATION
+   ============================================================ */
+
+function initializeGame() {
+    loadGame();
+
+    checkAchievements(true);
+
+    setupEvents();
+
+    $("autoToggle").checked =
+        state.autoEnabled;
+
+    $("autoSpeed").value =
+        String(state.autoInterval);
+
+    resizeStarfield();
+
+    renderShop();
+    renderCollection();
+    renderStats();
+    renderAchievements();
+
+    updateUI();
+
+    if (state.history.length > 0) {
+        const latest = state.history[0];
+
+        const tier =
+            CONFIG.rarity[latest.tierIndex];
+
+        if (tier) {
+            const starIndex =
+                tier.stars.indexOf(latest.name);
+
+            if (starIndex >= 0) {
+                updateStarVisual({
+                    tierIndex: latest.tierIndex,
+                    starIndex,
+                    tier,
+                    name: latest.name
+                });
+            }
+        }
+    }
+
+    lastFrameTime = performance.now();
+
+    nextAutoTime = performance.now();
+
+    requestAnimationFrame(gameLoop);
+
+    setInterval(() => {
+        saveGame();
+    }, CONFIG.autoSaveInterval);
+
+    console.log(
+        "%c STARFORGE INITIALIZED ",
+        "background:#7567ff;color:white;font-size:16px;padding:8px;"
+    );
+
+    console.log(
+        `${getTotalStars()} stars loaded across ${CONFIG.rarity.length} rarity tiers.`
+    );
+}
+
+initializeGame();
+
+</script>
+
+</body>
+</html>
