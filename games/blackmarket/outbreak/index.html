@@ -202,10 +202,144 @@ function repairOuterWorld(seed){
   containers.push({x:(bx+2)*32+16,y:(by+2)*32+16,used:false,type,kind:'Storage Shelf'});
  }
 }
+// V4: clear genuinely walkable passages across the old map boundary.
+// Earlier repairs stopped at the seam, leaving the old perimeter tree belt intact.
+function openDistrictPassages(){
+ const n=CONFIG.world,p=WORLD_PAD,center=p+128;
+ const segments=[
+  {dir:'north',lo:6,hi:p+28},
+  {dir:'south',lo:p+256-29,hi:n-7},
+  {dir:'west',lo:6,hi:p+28},
+  {dir:'east',lo:p+256-29,hi:n-7}
+ ];
+ for(const c of segments){
+  for(let v=c.lo;v<=c.hi;v++)for(let d=-4;d<=4;d++){
+   const tx=(c.dir==='north'||c.dir==='south')?center+d:v;
+   const ty=(c.dir==='west'||c.dir==='east')?center+d:v;
+   if(tx<4||ty<4||tx>=n-4||ty>=n-4)continue;
+   // A broad continuous route, including the original world's blocking edge.
+   setTile(tx,ty,Math.abs(d)<=2?1:0);
+  }
+  // Remove any physical objects in the passage, not just blocked map tiles.
+  const inPassage=o=>{
+   const x=o.x/32,y=o.y/32;
+   return (c.dir==='north'||c.dir==='south')
+    ?Math.abs(x-center)<5&&y>=c.lo-2&&y<=c.hi+2
+    :Math.abs(y-center)<5&&x>=c.lo-2&&x<=c.hi+2;
+  };
+  structures=structures.filter(o=>!inPassage(o));
+  wrecks=wrecks.filter(o=>!inPassage(o));
+ }
+}
+// V5 REGIONAL WORLD DESIGN. Only modifies the outer expansion; the original town is preserved.
+const REGION_LANDMARKS=[
+ {name:'CIVIC SQUARE',x:224,y:43,kind:'plaza'},
+ {name:'CENTRAL STATION',x:153,y:59,kind:'station'},
+ {name:'MEDICAL CENTER',x:291,y:52,kind:'hospital'},
+ {name:'FREIGHT YARD',x:396,y:174,kind:'freight'},
+ {name:'LOGISTICS DEPOT',x:393,y:289,kind:'depot'},
+ {name:'HARVEST FARM',x:46,y:177,kind:'farm'},
+ {name:'ROADSIDE MARKET',x:51,y:283,kind:'farm'},
+ {name:'RANGER OUTPOST',x:218,y:399,kind:'camp'}
+];
+function decorateRegions(seed){
+ const n=CONFIG.world,r=rng(hash(seed+':regional-v5')),old=(x,y)=>x>=96&&x<352&&y>=96&&y<352;
+ // Major downtown boulevard: wide pavement with a center median and walkable sidewalks.
+ for(let y=9;y<91;y++)for(let x=105;x<343;x++){
+  if(old(x,y)||tile(x,y)===3||tile(x,y)===7||tile(x,y)===8)continue;
+  if(Math.abs(x-224)<=4||Math.abs(y-44)<=3||Math.abs(y-72)<=2)setTile(x,y,Math.abs(x-224)<=2||Math.abs(y-44)<=1?1:2);
+ }
+ // Landmark grounds: paved plazas, parking lots, farm courtyards, freight loading aprons.
+ for(const l of REGION_LANDMARKS){
+  const rad=l.kind==='plaza'?13:l.kind==='freight'?15:l.kind==='farm'?12:10;
+  for(let y=l.y-rad;y<=l.y+rad;y++)for(let x=l.x-rad;x<=l.x+rad;x++){
+   if(x<5||y<5||x>=n-5||y>=n-5||old(x,y))continue;
+   const t=tile(x,y);if(t===3||t===7||t===8)continue;
+   const dx=Math.abs(x-l.x),dy=Math.abs(y-l.y);
+   if(dx<rad-1&&dy<rad-1)setTile(x,y,l.kind==='farm'?11:l.kind==='camp'?0:2);
+  }
+ }
+ // Industrial truck lanes and loading yards, separated by walkable sidewalks.
+ for(let y=111;y<342;y++)for(let x=355;x<439;x++){
+  const t=tile(x,y);if(t===3||t===7||t===8)continue;
+  if(x%39<5||y%51<5)setTile(x,y,x%39<3||y%51<3?1:2);
+  else if(t===10&&r()<.65)setTile(x,y,2);
+ }
+ // Rural lanes, orchards, and cultivated fields with navigable gaps.
+ for(let y=108;y<343;y++)for(let x=9;x<89;x++){
+  const t=tile(x,y);if(t===3||t===7||t===8)continue;
+  if(x%42<2||y%58<2)setTile(x,y,11);
+  else if(t===5&&r()<.72)setTile(x,y,0);
+ }
+ // Forest hiking trails and camp clearings: no impenetrable rows of trees.
+ for(let y=360;y<440;y++)for(let x=98;x<349;x++){
+  const t=tile(x,y);if(t===3||t===7||t===8)continue;
+  const trail=Math.abs(y-(395+Math.round(Math.sin(x/28)*8)))<3||Math.abs(x-224)<4;
+  if(trail)setTile(x,y,11);
+  else if(t===5&&r()<.48)setTile(x,y,0);
+ }
+ // Four unobstructed exits; always apply LAST, even after landscape decoration.
+ openDistrictPassages();
+}
+function drawRegionalDetail(x,y,t,px,py,seed){
+ if(x>=96&&x<352&&y>=96&&y<352)return;
+ const z=zoneAt(x*32+16,y*32+16);
+ if(t===3||t===7){
+  if(z==='city'){
+   ctx.fillStyle=t===7?'#414d59':'#25323e';ctx.fillRect(px+2,py+2,28,28);
+   if(t===7){ctx.strokeStyle='#8798a2';ctx.strokeRect(px+4,py+4,24,24);ctx.fillStyle='#667a87';ctx.fillRect(px+8,py+7,16,5);ctx.fillRect(px+8,py+18,16,5)}
+   else{ctx.fillStyle='#99b6c4';ctx.fillRect(px+5,py+4,5,3);ctx.fillRect(px+21,py+4,5,3)}
+  }else if(z==='industrial'){
+   ctx.fillStyle=t===7?'#64777b':'#344549';ctx.fillRect(px+1,py+1,30,30);
+   ctx.strokeStyle='#a0aba6';ctx.beginPath();ctx.moveTo(px+4,py+8);ctx.lineTo(px+28,py+8);ctx.moveTo(px+4,py+23);ctx.lineTo(px+28,py+23);ctx.stroke();
+   if(t===7){ctx.fillStyle='#8c9896';ctx.fillRect(px+8,py+11,17,9)}
+  }else if(z==='fields'){
+   ctx.fillStyle=t===7?'#6e5d48':'#514538';ctx.fillRect(px+2,py+2,28,28);ctx.strokeStyle='#bd9c6b';ctx.beginPath();ctx.moveTo(px+3,py+16);ctx.lineTo(px+29,py+16);ctx.stroke();
+  }else if(z==='forest'){
+   ctx.fillStyle=t===7?'#4c5b49':'#384a3b';ctx.fillRect(px+3,py+3,26,26);ctx.strokeStyle='#829078';ctx.strokeRect(px+5,py+5,22,22);
+  }
+ }
+ if(z==='city'&&t===2){
+  ctx.fillStyle='#9da6a0';ctx.fillRect(px+2,py+2,28,28);
+  if(seed%9===0){ctx.fillStyle='#bdc5b8';ctx.fillRect(px+4,py+4,10,10);ctx.fillStyle='#6c8586';ctx.fillRect(px+6,py+6,6,6)}
+  if(seed%17===0){ctx.fillStyle='#a3bb83';ctx.fillRect(px+18,py+18,9,9)}
+ }
+ if(z==='industrial'&&t===2){
+  ctx.fillStyle='#747b77';ctx.fillRect(px+1,py+1,30,30);
+  if(seed%7===0){ctx.fillStyle='#d2c58b';ctx.fillRect(px+3,py+7,26,2);ctx.fillRect(px+3,py+24,26,2)}
+  if(seed%11===0){ctx.fillStyle='#ac704f';ctx.fillRect(px+4,py+5,22,12);ctx.strokeStyle='#493b31';ctx.strokeRect(px+4,py+5,22,12)}
+ }
+ if(z==='fields'&&(t===0||t===11)){
+  if(seed%6<3){ctx.strokeStyle='#9a9d59';ctx.lineWidth=2;for(let k=4;k<32;k+=8){ctx.beginPath();ctx.moveTo(px+k,py+2);ctx.lineTo(px+k,py+30);ctx.stroke()}}
+  if(seed%19===0){ctx.fillStyle='#d6bb7a';ctx.fillRect(px+12,py+8,7,7)}
+ }
+ if(z==='forest'&&t===11){ctx.fillStyle='#857e60';ctx.fillRect(px+1,py+8,30,16);ctx.fillStyle='#9c946e';ctx.fillRect(px+1,py+12,30,2)}
+}
+function drawRegionLandmarks(minX,maxX,minY,maxY){
+ for(const l of REGION_LANDMARKS){
+  if(l.x<minX-20||l.x>maxX+20||l.y<minY-20||l.y>maxY+20)continue;
+  const px=l.x*32,py=l.y*32;
+  ctx.save();ctx.translate(px,py);
+  if(l.kind==='plaza'){
+   ctx.fillStyle='#788783';ctx.fillRect(-88,-75,176,150);ctx.fillStyle='#b8b9a4';ctx.fillRect(-67,-55,134,110);
+   ctx.fillStyle='#4d7269';ctx.fillRect(-35,-26,70,52);ctx.fillStyle='#b8d1c8';ctx.fillRect(-9,-24,18,48);
+   ctx.fillStyle='#385a49';for(let a of [-1,1])for(let b of [-1,1]){ctx.beginPath();ctx.arc(a*64,b*45,16,0,7);ctx.fill()}
+  }else if(l.kind==='freight'||l.kind==='depot'){
+   for(let i=0;i<5;i++){ctx.fillStyle=['#a36a50','#6c8b94','#8d8d76'][i%3];ctx.fillRect(-112+i*47,-45,39,100);ctx.strokeStyle='#293e40';ctx.strokeRect(-112+i*47,-45,39,100);ctx.fillStyle='#d0d1b9';ctx.fillRect(-108+i*47,-42,4,94)}
+  }else if(l.kind==='farm'){
+   ctx.fillStyle='#846344';ctx.fillRect(-62,-52,124,103);ctx.fillStyle='#b99768';ctx.fillRect(-48,-39,96,76);ctx.fillStyle='#614b3a';ctx.fillRect(-9,-38,18,74);
+  }else if(l.kind==='camp'){
+   ctx.fillStyle='#9c885a';ctx.beginPath();ctx.moveTo(-60,38);ctx.lineTo(-23,-39);ctx.lineTo(15,38);ctx.fill();ctx.fillStyle='#66785b';ctx.beginPath();ctx.moveTo(22,39);ctx.lineTo(62,-31);ctx.lineTo(92,39);ctx.fill();
+  }else{
+   ctx.fillStyle=l.kind==='hospital'?'#d7dcd1':'#7b8990';ctx.fillRect(-69,-49,138,99);ctx.fillStyle=l.kind==='hospital'?'#a84f4f':'#303d46';ctx.fillRect(-10,-31,20,61);ctx.fillRect(-31,-10,62,20);
+  }
+  ctx.font='bold 12px system-ui';ctx.textAlign='center';ctx.lineWidth=3;ctx.strokeStyle='#0a1516';ctx.strokeText(l.name,0,-94);ctx.fillStyle='#f0e4c1';ctx.fillText(l.name,0,-94);ctx.restore();
+ }
+}
 function generate(seed){
  const finalSize=CONFIG.world;CONFIG.world=OLD_WORLD;generateLegacy(seed);
  const legacy={world,buildings,containers,zombies,survivors,wrecks,checkpoints};
- CONFIG.world=finalSize;expandNeighborhood(seed,legacy);repairOuterWorld(seed);
+ CONFIG.world=finalSize;expandNeighborhood(seed,legacy);repairOuterWorld(seed);decorateRegions(seed);
 }
 function zoneAt(x,y){let tx=Math.floor(x/32),ty=Math.floor(y/32);if(tx<90)return 'fields';if(tx>357)return 'industrial';if(ty<90)return 'city';if(ty>357)return 'forest';return 'suburbs'}
 function regionalType(zone,r=Math.random){let n=r();if(zone==='fields'||zone==='forest')return n<.955?0:n<.986?4:1;if(zone==='suburbs')return n<.84?0:n<.94?4:n<.99?1:3;if(zone==='industrial')return n<.67?0:n<.82?6:n<.93?2:5;return n<.56?0:n<.74?1:n<.85?4:n<.94?3:2}
@@ -235,7 +369,7 @@ function inventoryWeight(){return Object.entries(state.inventory).reduce((n,[id,
 function validateGameData(){let issues=[];for(let [id,d] of Object.entries(ITEM)){if(d.weapon&&(!Number.isFinite(d.damage)||!Number.isFinite(d.reach)||!Number.isFinite(d.cool)))issues.push('weapon '+id);if(d.kind==='use'&&(!d.effect||!Number.isFinite(d.power)))issues.push('consumable '+id)}for(let [id,cost] of RECIPES){if(!ITEM[id])issues.push('recipe '+id);for(let material of Object.keys(cost))if(!ITEM[material])issues.push('material '+material)}for(let [id,,cost] of BUILD)for(let material of Object.keys(cost))if(!ITEM[material])issues.push('build '+id+':'+material);if(issues.length)console.error('OUTBREAK data validation:',issues);else console.info('OUTBREAK item/recipe data validated');return issues}
 validateGameData();
 function notify(msg,bad=false){feed.unshift({msg,bad,time:5});feed=feed.slice(0,5);document.getElementById('feed').innerHTML=feed.map(f=>`<div class="notice" style="border-color:${f.bad?'#ed8279':'#b6e78b'}">${esc(f.msg)}</div>`).join('')}function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function save(){if(!state||state.hp<=0)return;try{localStorage.setItem(CONFIG.saveKey,JSON.stringify({version:2,state,world,buildings,containers,zombies:zombies.slice(0,310),survivors,structures,checkpoints,wrecks,hordeClock,interior}));}catch(e){notify('Save storage full.','bad')}}function load(){try{let s=JSON.parse(localStorage.getItem(CONFIG.saveKey));if(!s||s.version!==2||!s.state||!Array.isArray(s.world))throw Error();if(s.world.length===OLD_WORLD*OLD_WORLD){const original={world:s.world,buildings:s.buildings||[],containers:s.containers||[],zombies:s.zombies||[],survivors:s.survivors||[],wrecks:s.wrecks||[],checkpoints:s.checkpoints||[]};expandNeighborhood(s.state.seed,original);const px=WORLD_PAD*32;s.world=world;s.buildings=buildings;s.containers=containers;s.zombies=zombies;s.survivors=survivors;s.wrecks=wrecks;s.checkpoints=checkpoints;s.state.x+=px;s.state.y+=px;for(const obj of s.structures||[]){obj.x+=px;obj.y+=px}if(s.state.interiors){const upgraded={};for(const [key,data] of Object.entries(s.state.interiors)){const [x,y]=key.split(',').map(Number);upgraded[(x+WORLD_PAD)+','+(y+WORLD_PAD)]=data}s.state.interiors=upgraded}if(s.interior){const b=s.interior.building;s.interior.building={...b,x:b.x+WORLD_PAD,y:b.y+WORLD_PAD,doorX:b.doorX+WORLD_PAD,doorY:b.doorY+WORLD_PAD};s.interior.key=s.interior.building.x+','+s.interior.building.y}}if(s.world.length!==CONFIG.world*CONFIG.world)throw Error();({state,world,buildings,containers,zombies,survivors,structures}=s);if(!state.outerWorldV3){repairOuterWorld(state.seed);state.outerWorldV3=true;}checkpoints=s.checkpoints||[];wrecks=s.wrecks||[];hordeClock=s.hordeClock||0;interior=s.interior||null;fixZombiePositions();camera.x=state.x;camera.y=state.y;paused=false;view='game';closeModal();notify('Saved world restored.');return true}catch{notify('No compatible save found.','bad');return false}}
+function save(){if(!state||state.hp<=0)return;try{localStorage.setItem(CONFIG.saveKey,JSON.stringify({version:2,state,world,buildings,containers,zombies:zombies.slice(0,310),survivors,structures,checkpoints,wrecks,hordeClock,interior}));}catch(e){notify('Save storage full.','bad')}}function load(){try{let s=JSON.parse(localStorage.getItem(CONFIG.saveKey));if(!s||s.version!==2||!s.state||!Array.isArray(s.world))throw Error();if(s.world.length===OLD_WORLD*OLD_WORLD){const original={world:s.world,buildings:s.buildings||[],containers:s.containers||[],zombies:s.zombies||[],survivors:s.survivors||[],wrecks:s.wrecks||[],checkpoints:s.checkpoints||[]};expandNeighborhood(s.state.seed,original);const px=WORLD_PAD*32;s.world=world;s.buildings=buildings;s.containers=containers;s.zombies=zombies;s.survivors=survivors;s.wrecks=wrecks;s.checkpoints=checkpoints;s.state.x+=px;s.state.y+=px;for(const obj of s.structures||[]){obj.x+=px;obj.y+=px}if(s.state.interiors){const upgraded={};for(const [key,data] of Object.entries(s.state.interiors)){const [x,y]=key.split(',').map(Number);upgraded[(x+WORLD_PAD)+','+(y+WORLD_PAD)]=data}s.state.interiors=upgraded}if(s.interior){const b=s.interior.building;s.interior.building={...b,x:b.x+WORLD_PAD,y:b.y+WORLD_PAD,doorX:b.doorX+WORLD_PAD,doorY:b.doorY+WORLD_PAD};s.interior.key=s.interior.building.x+','+s.interior.building.y}}if(s.world.length!==CONFIG.world*CONFIG.world)throw Error();({state,world,buildings,containers,zombies,survivors,structures}=s);if(!state.outerWorldV3){repairOuterWorld(state.seed);state.outerWorldV3=true;}checkpoints=s.checkpoints||[];wrecks=s.wrecks||[];if(!state.outerWorldV4){openDistrictPassages();state.outerWorldV4=true;}if(!state.outerWorldV5){decorateRegions(state.seed);state.outerWorldV5=true;}hordeClock=s.hordeClock||0;interior=s.interior||null;fixZombiePositions();camera.x=state.x;camera.y=state.y;paused=false;view='game';closeModal();notify('Saved world restored.');return true}catch{notify('No compatible save found.','bad');return false}}
 function screenToWorld(x,y){return{x:(x-W/2)/camera.zoom+camera.x,y:(y-H/2)/camera.zoom+camera.y}}function worldToScreen(x,y){return{x:(x-camera.x)*camera.zoom+W/2,y:(y-camera.y)*camera.zoom+H/2}}
 function nearest(list,range){let best=null,d=range;for(let o of list){let dd=dist(state.x,state.y,o.x,o.y);if(dd<d){best=o;d=dd}}return best}
 
@@ -326,7 +460,9 @@ function draw(){
   if(t===10){ctx.fillStyle='#7b8580';ctx.beginPath();ctx.ellipse(px+16,py+19,14,10,-.3,0,Math.PI*2);ctx.fill();ctx.fillStyle='#a3a9a0';ctx.fillRect(px+8,py+12,9,2)}
   if(t===11){ctx.fillStyle='#8c9856';for(let k=0;k<5;k++)ctx.fillRect(px+(k*7+seed)%29,py+3,1,24)}
   if(t===12){ctx.fillStyle='#d1b989';ctx.fillRect(px+8,py+19,3,4);ctx.fillRect(px+23,py+9,3,4)}
+  drawRegionalDetail(x,y,t,px,py,seed);
  }
+ drawRegionLandmarks(minX,maxX,minY,maxY);
  for(let b of buildings){if(b.x>maxX||b.x+b.w<minX||b.y>maxY||b.y+b.h<minY)continue;ctx.fillStyle='#101b1ba8';ctx.fillRect(b.x*32-4,b.y*32-4,b.w*32+8,5);ctx.font='bold 10px system-ui';ctx.textAlign='center';ctx.fillStyle='#d9e8d0';ctx.fillText(b.type.toUpperCase(),(b.x+b.w/2)*32,(b.y-.2)*32);ctx.textAlign='left'}
  for(let cp of checkpoints){if(Math.abs(cp.x-camera.x)>W/camera.zoom+250||Math.abs(cp.y-camera.y)>H/camera.zoom+250)continue;ctx.fillStyle='#c5a46b';ctx.fillRect(cp.x-115,cp.y-92,230,8);ctx.fillRect(cp.x-115,cp.y+84,230,8);ctx.fillStyle='#d6cfad';ctx.fillRect(cp.x-116,cp.y-88,5,172);ctx.fillRect(cp.x+111,cp.y-88,5,172);ctx.fillStyle='#ba674b';for(let i=0;i<5;i++){ctx.fillRect(cp.x-106+i*45,cp.y-91,18,6);ctx.fillRect(cp.x-106+i*45,cp.y+86,18,6)}ctx.font='bold 12px system-ui';ctx.textAlign='center';ctx.fillStyle='#f4d8a6';ctx.fillText('QUARANTINE CHECKPOINT',cp.x,cp.y-102)}
  for(let w of wrecks){if(Math.abs(w.x-camera.x)>W/camera.zoom+60||Math.abs(w.y-camera.y)>H/camera.zoom+60)continue;ctx.save();ctx.translate(w.x,w.y);ctx.rotate(w.angle);ctx.fillStyle='#0b181b77';ctx.fillRect(-25,-13,52,29);ctx.fillStyle=w.kind==='Military Vehicle'?'#68785e':'#6c7b83';ctx.fillRect(-23,-12,46,24);ctx.fillStyle='#243b43';ctx.fillRect(-8,-9,18,18);ctx.fillStyle='#a0aeb0';ctx.fillRect(-19,-10,5,5);ctx.fillStyle='#161d20';for(let k of [-17,17]){ctx.fillRect(k-6,-17,12,5);ctx.fillRect(k-6,12,12,5)}if(!w.used){ctx.fillStyle='#f1db91';ctx.font='bold 13px system-ui';ctx.textAlign='center';ctx.fillText('E',0,-22)}ctx.restore()}
@@ -375,7 +511,7 @@ function bagCategory(id){let d=ITEM[id];if(d.weapon)return 'weapons';if(d.kind==
 function bagDescription(id){let d=ITEM[id];if(d.weapon)return `${d.ranged?'Ranged weapon':'Melee weapon'} • ${d.damage} damage • ${d.ranged?'Uses pistol ammo':Math.round(d.reach)+' range'}`;if(d.kind==='use')return `Restores ${d.power||1} ${d.effect==='health'?'health':d.effect==='hunger'?'hunger':d.effect==='thirst'?'thirst':'infection status'}`;if(id==='backpack')return 'Adds 18 kg of carrying capacity while owned.';if(id==='armor')return 'Protective vest: reduces incoming damage while carried.';return 'Crafting and survival material.'}
 function setBagFilter(f){bagFilter=f;showInventory()}
 function showInventory(){view='inventory';let items=Object.entries(state.inventory).filter(([id,n])=>n>0&&ITEM[id]&&(bagFilter==='all'||bagCategory(id)===bagFilter));let weight=inventoryWeight(),cap=capacity(),pct=Math.min(100,weight/cap*100);showModal(`<div class="bagScreen"><div class="bagHeading"><div><div class="bagSub">SURVIVOR EQUIPMENT / STORAGE</div><h2>🎒 YOUR BACKPACK</h2></div><button onclick="closeModal();paused=false">✕ CLOSE · I</button></div><div class="bagShell"><div class="bagHandle"></div><div class="bagPatch"><span>OUTBREAK // FIELD PACK</span><span>${weight.toFixed(1)} / ${cap} KG</span></div><div class="bagCapacity" title="Carrying capacity: ${weight.toFixed(1)} of ${cap} kilograms"><div class="bagCapacityFill ${pct>90?'over':''}" style="width:${pct}%"></div></div><div class="bagPocket"><div class="bagFilters">${[['all','ALL ITEMS'],['weapons','WEAPONS'],['supplies','SUPPLIES'],['gear','EQUIPMENT'],['materials','MATERIALS']].map(([id,name])=>`<button class="bagFilter ${bagFilter===id?'active':''}" onclick="setBagFilter('${id}')">${name}</button>`).join('')}</div><div class="bagGrid">${items.map(([id,n])=>`<div class="bagItem ${state.weapon===id?'equipped':''}" title="${esc(bagDescription(id))}"><div class="bagIcon">${ITEM[id].icon}</div><div class="bagItemName">${esc(ITEM[id].name)}</div><div class="bagQty">×${n} · ${(ITEM[id].weight*n).toFixed(1)} kg${state.weapon===id?' · EQUIPPED':''}</div><div class="bagItemActions">${ITEM[id].kind==='use'?`<button onclick="useItem('${id}')">USE</button>`:ITEM[id].weapon?`<button onclick="state.weapon='${id}';showInventory()">EQUIP</button>`:''}<button onclick="dropItem('${id}')">DROP 1</button></div></div>`).join('')||'<div class="bagEmpty">No items in this pocket.</div>'}</div></div><div class="bagFooter"><span>🧵 REINFORCED CANVAS · FIELD SURVIVAL KIT</span><span><kbd>I</kbd> Open / close · Hover items for details</span></div></div><p class="bagHelp">Select a category to sort your gear. Hover over an item to see its effects; use, equip, or drop it using the buttons.</p></div>`)}function dropItem(id){consume(id);notify('Dropped '+ITEM[id].name);showInventory()}
-function showCraft(){view='craft';showModal(`<header><h2>CRAFTING</h2><button onclick="closeModal();paused=false">Close · K</button></header><p>Gather resources by searching containers. Recipes turn scavenged materials into survival equipment.</p><div class="grid">${RECIPES.map(([id,cost,n])=>`<div class="card"><strong>${ITEM[id].icon} ${ITEM[id].name} ×${n}</strong><p>${Object.entries(cost).map(([i,v])=>`${ITEM[i].name} ${v}/${state.inventory[i]||0}`).join(' · ')}</p><button ${canAfford(cost)?'':'disabled'} onclick="craft('${id}')">Craft</button></div>`).join('')}</div>`)}function showBuild(){view='build';showModal(`<header><h2>BUILD & FORTIFY</h2><button onclick="closeModal();paused=false">Close · B</button></header><p>Choose a structure, then click an empty tile near your character to place it. Press B to cancel placement.</p><div class="grid">${BUILD.map(([id,name,cost,hp])=>`<div class="card"><strong>${name}</strong><p>${Object.entries(cost).map(([i,v])=>`${ITEM[i].name} ${v}/${state.inventory[i]||0}`).join(' · ')}</p><button ${canAfford(cost)?'':'disabled'} onclick="buildMode='${id}';closeModal();paused=false;notify('Click nearby ground to place ${name}.')">Place</button></div>`).join('')}</div>`)}function showBase(){view='base';showModal(`<header><h2>YOUR SURVIVORS</h2><button onclick="closeModal();paused=false">Close · V</button></header><p>Recruit people you meet by pressing E nearby. Guards help defend you.</p><div class="grid">${survivors.filter(s=>s.recruited).map((s,i)=>`<div class="card"><strong>${esc(s.name)}</strong><p>${s.role} · ${Math.round(s.hp)} health</p><button onclick="survivors.filter(x=>x.recruited)[${i}].role='Guard';showBase()">Guard</button> <button onclick="survivors.filter(x=>x.recruited)[${i}].role='Follower';showBase()">Follow</button></div>`).join('')||'<p>No survivors recruited yet. Explore town to find people.</p>'}</div>`)}function showMap(){view='map';showModal('<header><h2>WORLD MAP // DISTRICTS</h2><button onclick="closeModal();paused=false">CLOSE</button></header><p>North: DOWNTOWN · East: INDUSTRIAL · West: FARMLAND · South: FOREST · Center: NEIGHBORHOODS · Gold: you</p><canvas id="fullMap" width="640" height="640" style="width:min(100%,640px);aspect-ratio:1;border:1px solid #50685c;border-radius:10px;image-rendering:pixelated"></canvas>');let c=document.getElementById('fullMap'),cx=c.getContext('2d'),n=CONFIG.world,scale=c.width/n;for(let y=0;y<n;y++)for(let x=0;x<n;x++){let t=tile(x,y);cx.fillStyle=t===1?'#8c9995':t===3?'#c3b6a1':t===5?'#234f37':t===7?'#8d8374':t===11?'#939c5d':'#375b47';cx.fillRect(x*scale,y*scale,scale+1,scale+1)}cx.fillStyle='#ffe09b';cx.beginPath();cx.arc(state.x/32*scale,state.y/32*scale,6,0,7);cx.fill();cx.font='bold 13px system-ui';cx.textAlign='center';cx.lineWidth=3;cx.strokeStyle='#07110fcc';for(const [label,x,y] of [['DOWNTOWN',224,47],['FARMLAND',45,224],['INDUSTRIAL',400,224],['FOREST',224,408],['NEIGHBORHOODS',224,224]]){cx.strokeText(label,x*scale,y*scale);cx.fillStyle='#f4e8c7';cx.fillText(label,x*scale,y*scale)}cx.textAlign='start'}
+function showCraft(){view='craft';showModal(`<header><h2>CRAFTING</h2><button onclick="closeModal();paused=false">Close · K</button></header><p>Gather resources by searching containers. Recipes turn scavenged materials into survival equipment.</p><div class="grid">${RECIPES.map(([id,cost,n])=>`<div class="card"><strong>${ITEM[id].icon} ${ITEM[id].name} ×${n}</strong><p>${Object.entries(cost).map(([i,v])=>`${ITEM[i].name} ${v}/${state.inventory[i]||0}`).join(' · ')}</p><button ${canAfford(cost)?'':'disabled'} onclick="craft('${id}')">Craft</button></div>`).join('')}</div>`)}function showBuild(){view='build';showModal(`<header><h2>BUILD & FORTIFY</h2><button onclick="closeModal();paused=false">Close · B</button></header><p>Choose a structure, then click an empty tile near your character to place it. Press B to cancel placement.</p><div class="grid">${BUILD.map(([id,name,cost,hp])=>`<div class="card"><strong>${name}</strong><p>${Object.entries(cost).map(([i,v])=>`${ITEM[i].name} ${v}/${state.inventory[i]||0}`).join(' · ')}</p><button ${canAfford(cost)?'':'disabled'} onclick="buildMode='${id}';closeModal();paused=false;notify('Click nearby ground to place ${name}.')">Place</button></div>`).join('')}</div>`)}function showBase(){view='base';showModal(`<header><h2>YOUR SURVIVORS</h2><button onclick="closeModal();paused=false">Close · V</button></header><p>Recruit people you meet by pressing E nearby. Guards help defend you.</p><div class="grid">${survivors.filter(s=>s.recruited).map((s,i)=>`<div class="card"><strong>${esc(s.name)}</strong><p>${s.role} · ${Math.round(s.hp)} health</p><button onclick="survivors.filter(x=>x.recruited)[${i}].role='Guard';showBase()">Guard</button> <button onclick="survivors.filter(x=>x.recruited)[${i}].role='Follower';showBase()">Follow</button></div>`).join('')||'<p>No survivors recruited yet. Explore town to find people.</p>'}</div>`)}function showMap(){view='map';showModal('<header><h2>WORLD MAP // DISTRICTS</h2><button onclick="closeModal();paused=false">CLOSE</button></header><p>North: DOWNTOWN · East: INDUSTRIAL · West: FARMLAND · South: FOREST · Center: NEIGHBORHOODS · Gold: you</p><canvas id="fullMap" width="640" height="640" style="width:min(100%,640px);aspect-ratio:1;border:1px solid #50685c;border-radius:10px;image-rendering:pixelated"></canvas>');let c=document.getElementById('fullMap'),cx=c.getContext('2d'),n=CONFIG.world,scale=c.width/n;for(let y=0;y<n;y++)for(let x=0;x<n;x++){let t=tile(x,y);const z=zoneAt(x*32,y*32);cx.fillStyle=t===1?'#8c9995':t===3?(z==='city'?'#879da9':z==='industrial'?'#b2a995':'#c3b6a1'):t===5?'#234f37':t===7?(z==='city'?'#647b8b':z==='industrial'?'#697c80':'#8d8374'):t===2?(z==='city'?'#aab8b8':'#858e89'):t===11?'#939c5d':z==='fields'?'#6e7d43':z==='city'?'#4d6266':z==='industrial'?'#536260':'#375b47';cx.fillRect(x*scale,y*scale,scale+1,scale+1)}cx.fillStyle='#ffe09b';cx.beginPath();cx.arc(state.x/32*scale,state.y/32*scale,6,0,7);cx.fill();cx.font='bold 13px system-ui';cx.textAlign='center';cx.lineWidth=3;cx.strokeStyle='#07110fcc';for(const [label,x,y] of [['DOWNTOWN',224,47],['FARMLAND',45,224],['INDUSTRIAL',400,224],['FOREST',224,408],['NEIGHBORHOODS',224,224]]){cx.strokeText(label,x*scale,y*scale);cx.fillStyle='#f4e8c7';cx.fillText(label,x*scale,y*scale)}for(const l of REGION_LANDMARKS){cx.fillStyle='#ffcf78';cx.fillRect(l.x*scale-3,l.y*scale-3,6,6)}cx.textAlign='start'}
 function sound(freq=220,duration=.08){try{audio=audio||new(window.AudioContext||window.webkitAudioContext)();let osc=audio.createOscillator(),gain=audio.createGain();osc.type='triangle';osc.frequency.setValueAtTime(freq,audio.currentTime);osc.frequency.exponentialRampToValueAtTime(Math.max(50,freq*.55),audio.currentTime+duration);gain.gain.setValueAtTime(.045,audio.currentTime);gain.gain.exponentialRampToValueAtTime(.001,audio.currentTime+duration);osc.connect(gain);gain.connect(audio.destination);osc.start();osc.stop(audio.currentTime+duration)}catch{}}
 function toggle(key){if(!state)return;if(modal.classList.contains('show')){if(key==='Escape'||key==='i'||key==='k'||key==='b'||key==='m'||key==='v'){closeModal();paused=false}return}if(key==='Escape')showPause();else if(key==='i')showInventory();else if(key==='k')showCraft();else if(key==='b'){if(buildMode){buildMode=null;notify('Build placement canceled.')}else showBuild()}else if(key==='v')showBase();else if(key==='m')showMap();else if(key==='e')interact();else if(key==='f'){state.flashlight=!state.flashlight;notify('Flashlight '+(state.flashlight?'on':'off'))}else if('123456789'.includes(key))hotbarSelect(Number(key)-1)}
 addEventListener('keydown',e=>{if(['INPUT','SELECT','TEXTAREA'].includes(document.activeElement.tagName))return;keys[e.key]=true;keys[e.key.toLowerCase()]=true;if([' ','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Tab'].includes(e.key))e.preventDefault();if(e.repeat)return;toggle(e.key.length===1?e.key.toLowerCase():e.key)});addEventListener('keyup',e=>{keys[e.key]=false;keys[e.key.toLowerCase()]=false});addEventListener('blur',()=>{keys={};if(state&&!paused)showPause()});canvas.addEventListener('mousemove',e=>{mouse.x=e.clientX;mouse.y=e.clientY});canvas.addEventListener('mousedown',e=>{if(e.button!==0||paused)return;mouse.x=e.clientX;mouse.y=e.clientY;if(buildMode){let p=screenToWorld(mouse.x,mouse.y);buildAt(p.x,p.y)}else if(interior)attackInterior();else attack()});canvas.addEventListener('wheel',e=>{if(!state)return;e.preventDefault();camera.zoom=clamp(camera.zoom+(e.deltaY<0?.1:-.1),.65,2.2)},{passive:false});canvas.addEventListener('contextmenu',e=>e.preventDefault());function updateLootTutorial(){
