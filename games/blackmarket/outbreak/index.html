@@ -155,10 +155,57 @@ function expandNeighborhood(seed, legacy){
  }
  for(let i=0;i<55;i++){let tx=5+Math.floor(r()*(n-10)),ty=5+Math.floor(r()*(n-10));if(tx>=pad&&tx<pad+256&&ty>=pad&&ty<pad+256)continue;if(tile(tx,ty)===1||tile(tx,ty)===2)wrecks.push({x:tx*32+16,y:ty*32+16,used:false,angle:r()*6.28,kind:'Wrecked Car'});}
 }
+// V3 OUTSKIRTS REPAIR: connected highways, accessible woodland, and denser regional landmarks.
+function repairOuterWorld(seed){
+ const n=CONFIG.world,p=WORLD_PAD,r=rng(hash(seed+':district-repair-v3'));
+ const inOld=(x,y)=>x>=p&&x<p+256&&y>=p&&y<p+256;
+ // A navigable road must run continuously from the original town into every district.
+ // At the seam, connect to the original road grid at tile 224 (old tile 128).
+ const corridors=[
+  {side:'north',axis:224,start:2,end:p+3},
+  {side:'south',axis:224,start:p+252,end:n-4},
+  {side:'west',axis:224,start:2,end:p+3},
+  {side:'east',axis:224,start:p+252,end:n-4}
+ ];
+ for(const c of corridors)for(let v=c.start;v<=c.end;v++)for(let d=-3;d<=3;d++){
+  const x=c.side==='north'||c.side==='south'?c.axis+d:v;
+  const y=c.side==='west'||c.side==='east'?c.axis+d:v;
+  if(x<4||y<4||x>=n-4||y>=n-4||inOld(x,y))continue;
+  setTile(x,y,Math.abs(d)<=2?1:0);
+ }
+ // Open secondary east-west and north-south routes, with clearings beside them.
+ for(let y=10;y<n-10;y++)for(let x=10;x<n-10;x++){
+  if(inOld(x,y))continue;
+  const z=zoneAt(x*32,y*32);
+  if(z==='forest'){
+   const road=(Math.abs(x-224)<3||y%54<3);
+   if(road)setTile(x,y,11);
+   else if(tile(x,y)===5 && r()<.67)setTile(x,y,0);
+  }
+  if(z==='fields'&&tile(x,y)===5&&r()<.8)setTile(x,y,0);
+ }
+ // A visible town core and denser, varied commercial blocks in the northern downtown.
+ // Leave existing buildings and the original neighborhood untouched.
+ for(let by=16;by<83;by+=12)for(let bx=116;bx<332;bx+=13){
+  if(r()<.17)continue;
+  const w=7+Math.floor(r()*3),h=7+Math.floor(r()*2),doorX=bx+(w>>1),doorY=by+h-1;
+  if(buildings.some(b=>bx<b.x+b.w+2&&bx+w+2>b.x&&by<b.y+b.h+2&&by+h+2>b.y))continue;
+  let ok=true;
+  for(let yy=by-1;yy<=by+h&&ok;yy++)for(let xx=bx-1;xx<=bx+w;xx++){
+   const t=tile(xx,yy);if(t!==0&&t!==12){ok=false;break}
+  }
+  if(!ok)continue;
+  const type=pick(r,['Apartment','Apartment','Grocery','Clinic','Police','Pawn Shop']);
+  buildings.push({x:bx,y:by,w,h,type,doorX,doorY});
+  for(let yy=by;yy<by+h;yy++)for(let xx=bx;xx<bx+w;xx++)setTile(xx,yy,xx===bx||yy===by||xx===bx+w-1||yy===by+h-1?3:7);
+  setTile(doorX,doorY,8);
+  containers.push({x:(bx+2)*32+16,y:(by+2)*32+16,used:false,type,kind:'Storage Shelf'});
+ }
+}
 function generate(seed){
  const finalSize=CONFIG.world;CONFIG.world=OLD_WORLD;generateLegacy(seed);
  const legacy={world,buildings,containers,zombies,survivors,wrecks,checkpoints};
- CONFIG.world=finalSize;expandNeighborhood(seed,legacy);
+ CONFIG.world=finalSize;expandNeighborhood(seed,legacy);repairOuterWorld(seed);
 }
 function zoneAt(x,y){let tx=Math.floor(x/32),ty=Math.floor(y/32);if(tx<90)return 'fields';if(tx>357)return 'industrial';if(ty<90)return 'city';if(ty>357)return 'forest';return 'suburbs'}
 function regionalType(zone,r=Math.random){let n=r();if(zone==='fields'||zone==='forest')return n<.955?0:n<.986?4:1;if(zone==='suburbs')return n<.84?0:n<.94?4:n<.99?1:3;if(zone==='industrial')return n<.67?0:n<.82?6:n<.93?2:5;return n<.56?0:n<.74?1:n<.85?4:n<.94?3:2}
@@ -188,7 +235,7 @@ function inventoryWeight(){return Object.entries(state.inventory).reduce((n,[id,
 function validateGameData(){let issues=[];for(let [id,d] of Object.entries(ITEM)){if(d.weapon&&(!Number.isFinite(d.damage)||!Number.isFinite(d.reach)||!Number.isFinite(d.cool)))issues.push('weapon '+id);if(d.kind==='use'&&(!d.effect||!Number.isFinite(d.power)))issues.push('consumable '+id)}for(let [id,cost] of RECIPES){if(!ITEM[id])issues.push('recipe '+id);for(let material of Object.keys(cost))if(!ITEM[material])issues.push('material '+material)}for(let [id,,cost] of BUILD)for(let material of Object.keys(cost))if(!ITEM[material])issues.push('build '+id+':'+material);if(issues.length)console.error('OUTBREAK data validation:',issues);else console.info('OUTBREAK item/recipe data validated');return issues}
 validateGameData();
 function notify(msg,bad=false){feed.unshift({msg,bad,time:5});feed=feed.slice(0,5);document.getElementById('feed').innerHTML=feed.map(f=>`<div class="notice" style="border-color:${f.bad?'#ed8279':'#b6e78b'}">${esc(f.msg)}</div>`).join('')}function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function save(){if(!state||state.hp<=0)return;try{localStorage.setItem(CONFIG.saveKey,JSON.stringify({version:2,state,world,buildings,containers,zombies:zombies.slice(0,310),survivors,structures,checkpoints,wrecks,hordeClock,interior}));}catch(e){notify('Save storage full.','bad')}}function load(){try{let s=JSON.parse(localStorage.getItem(CONFIG.saveKey));if(!s||s.version!==2||!s.state||!Array.isArray(s.world))throw Error();if(s.world.length===OLD_WORLD*OLD_WORLD){const original={world:s.world,buildings:s.buildings||[],containers:s.containers||[],zombies:s.zombies||[],survivors:s.survivors||[],wrecks:s.wrecks||[],checkpoints:s.checkpoints||[]};expandNeighborhood(s.state.seed,original);const px=WORLD_PAD*32;s.world=world;s.buildings=buildings;s.containers=containers;s.zombies=zombies;s.survivors=survivors;s.wrecks=wrecks;s.checkpoints=checkpoints;s.state.x+=px;s.state.y+=px;for(const obj of s.structures||[]){obj.x+=px;obj.y+=px}if(s.state.interiors){const upgraded={};for(const [key,data] of Object.entries(s.state.interiors)){const [x,y]=key.split(',').map(Number);upgraded[(x+WORLD_PAD)+','+(y+WORLD_PAD)]=data}s.state.interiors=upgraded}if(s.interior){const b=s.interior.building;s.interior.building={...b,x:b.x+WORLD_PAD,y:b.y+WORLD_PAD,doorX:b.doorX+WORLD_PAD,doorY:b.doorY+WORLD_PAD};s.interior.key=s.interior.building.x+','+s.interior.building.y}}if(s.world.length!==CONFIG.world*CONFIG.world)throw Error();({state,world,buildings,containers,zombies,survivors,structures}=s);checkpoints=s.checkpoints||[];wrecks=s.wrecks||[];hordeClock=s.hordeClock||0;interior=s.interior||null;fixZombiePositions();camera.x=state.x;camera.y=state.y;paused=false;view='game';closeModal();notify('Saved world restored.');return true}catch{notify('No compatible save found.','bad');return false}}
+function save(){if(!state||state.hp<=0)return;try{localStorage.setItem(CONFIG.saveKey,JSON.stringify({version:2,state,world,buildings,containers,zombies:zombies.slice(0,310),survivors,structures,checkpoints,wrecks,hordeClock,interior}));}catch(e){notify('Save storage full.','bad')}}function load(){try{let s=JSON.parse(localStorage.getItem(CONFIG.saveKey));if(!s||s.version!==2||!s.state||!Array.isArray(s.world))throw Error();if(s.world.length===OLD_WORLD*OLD_WORLD){const original={world:s.world,buildings:s.buildings||[],containers:s.containers||[],zombies:s.zombies||[],survivors:s.survivors||[],wrecks:s.wrecks||[],checkpoints:s.checkpoints||[]};expandNeighborhood(s.state.seed,original);const px=WORLD_PAD*32;s.world=world;s.buildings=buildings;s.containers=containers;s.zombies=zombies;s.survivors=survivors;s.wrecks=wrecks;s.checkpoints=checkpoints;s.state.x+=px;s.state.y+=px;for(const obj of s.structures||[]){obj.x+=px;obj.y+=px}if(s.state.interiors){const upgraded={};for(const [key,data] of Object.entries(s.state.interiors)){const [x,y]=key.split(',').map(Number);upgraded[(x+WORLD_PAD)+','+(y+WORLD_PAD)]=data}s.state.interiors=upgraded}if(s.interior){const b=s.interior.building;s.interior.building={...b,x:b.x+WORLD_PAD,y:b.y+WORLD_PAD,doorX:b.doorX+WORLD_PAD,doorY:b.doorY+WORLD_PAD};s.interior.key=s.interior.building.x+','+s.interior.building.y}}if(s.world.length!==CONFIG.world*CONFIG.world)throw Error();({state,world,buildings,containers,zombies,survivors,structures}=s);if(!state.outerWorldV3){repairOuterWorld(state.seed);state.outerWorldV3=true;}checkpoints=s.checkpoints||[];wrecks=s.wrecks||[];hordeClock=s.hordeClock||0;interior=s.interior||null;fixZombiePositions();camera.x=state.x;camera.y=state.y;paused=false;view='game';closeModal();notify('Saved world restored.');return true}catch{notify('No compatible save found.','bad');return false}}
 function screenToWorld(x,y){return{x:(x-W/2)/camera.zoom+camera.x,y:(y-H/2)/camera.zoom+camera.y}}function worldToScreen(x,y){return{x:(x-camera.x)*camera.zoom+W/2,y:(y-camera.y)*camera.zoom+H/2}}
 function nearest(list,range){let best=null,d=range;for(let o of list){let dd=dist(state.x,state.y,o.x,o.y);if(dd<d){best=o;d=dd}}return best}
 
