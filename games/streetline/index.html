@@ -131,7 +131,7 @@ function engineSvg(c){
  const spec=engineSpec(c),b=engineBuild(c),met=engineMetrics(c),name=model(c).name;
  const arch=spec.architecture,flat=arch.startsWith('Flat'),v=/^V\d/.test(arch),banks=v||flat?2:1;
  const n=spec.cylinders,per=Math.ceil(n/banks),turbo=Number(b.forced)||0,intake=Number(b.induction)||0,cool=Number(b.cooling)||0,oil=Number(b.oil)||0,ecu=Number(b.ecu)||0,exhaust=Number(b.exhaust)||0,fuel=Number(b.fuel)||0,internals=Number(b.internals)||0,cam=Number(b.cam)||0;
- const pal=['#546b79','#777c83','#4e6667','#777079','#526f85'][c.model%5],trim=['#ce675c','#6fb5d4','#d2b177','#b8a3cf','#7cbea7'][c.model%5];
+ const pal=['#546b79','#777c83','#4e6667','#777079','#526f85'][((c.model%5)+5)%5],trim=['#ce675c','#6fb5d4','#d2b177','#b8a3cf','#7cbea7'][((c.model%5)+5)%5];
  const id='eng'+c.model;
  const bolt=(x,y,r=3)=>`<circle cx="${x}" cy="${y}" r="${r}" fill="#b5c4c9" stroke="#1b2b32" stroke-width="1.3"/><path d="M${x-1.7} ${y}h3.4" stroke="#415562" stroke-width="1"/>`;
  const pipe=(path,color='#586f7a',width=13)=>`<path d="${path}" fill="none" stroke="#0a1117" stroke-width="${width+4}" stroke-linejoin="round" stroke-linecap="round"/><path d="${path}" fill="none" stroke="${color}" stroke-width="${width}" stroke-linejoin="round" stroke-linecap="round"/><path d="${path}" fill="none" stroke="#b9c9d0" opacity=".4" stroke-width="2"/>`;
@@ -180,7 +180,7 @@ function go(t){if(t==='Admin Lab'&&!adminUnlocked)t='Admin Access';screen=t;rend
 function carArt(ctx,c,x,y,scale=1){
  // Purpose-built pixel-art side elevation. Designed on a fixed 480×210 sprite grid;
  // each vehicle category has its own wheelbase, cabin, nose, tail and glazing.
- const m=model(c),id=m.id,cat=m.category,sty=styleOf(c),paint=isAdminCar(c)?'#140c32':c.color||'#b85e52';
+ const m=model(c),id=isAdminCar(c)?47:m.id,cat=m.category,sty=styleOf(c),paint=isAdminCar(c)?'#140c32':c.color||'#b85e52';
  const kind=cat==='Supercar'||cat==='Hypercar'?'super':cat==='Off-road'?'suv':cat==='Hatchback'||cat==='Economy'?'hatch':cat==='Muscle'?'muscle':cat==='Sedan'||cat==='Beater'?'sedan':'coupe';
  const designs={
   super:{left:14,right:468,rear:112,front:363,rad:30,top:52,roofL:179,roofR:296,windL:151,windR:319,deck:111,hood:118,nose:119,bottom:161,door:260},
@@ -547,7 +547,7 @@ function adminDownload(data,name){const blob=new Blob([JSON.stringify(data,null,
 function adminAction(action){try{
  const c=adminSelectedCar(),eventIndex=Number($('adm-event')?.value||0),event=CONFIG.events[eventIndex];let n,msg='';
  switch(action){
- case 'spawn-void':{const v=makeCar(MODELS[MODELS.length-1],1);v.model=-1;v.adminPrototype=true;v.adminPower=0;v.color='#140c32';v.paint='Metallic';v.wing=true;v.style={...v.style,wingSize:4,ride:-20,wheelColor:'#bb44ff',tint:85,accent:'#18efff',bodykit:2};v.nitrousStage=4;Object.keys(v.components).forEach(k=>v.components[k]=100);v.condition=100;state.cars.push(v);state.active=v.id;msg='VOIDRUNNER Ω spawned and equipped';break}
+ case 'spawn-void':{const v=makeCar(MODELS[MODELS.length-1],1);v.model=MODELS.length-1;v.adminPrototype=true;v.adminPower=0;v.color='#140c32';v.paint='Metallic';v.wing=true;v.style={...v.style,wingSize:4,ride:-20,wheelColor:'#bb44ff',tint:85,accent:'#18efff',bodykit:2};v.nitrousStage=4;Object.keys(v.components).forEach(k=>v.components[k]=100);v.condition=100;state.cars.push(v);state.active=v.id;msg='VOIDRUNNER Ω spawned and equipped';break}
  case 'void-upgrade':case 'void-upgrade-100':{const v=car();if(!isAdminCar(v))throw Error('Equip VOIDRUNNER Ω first');v.adminPower=(v.adminPower||0)+(action==='void-upgrade'?1:100);msg='VOIDRUNNER power level '+v.adminPower;break}
  case 'player':{const cash=adminNum('adm-cash',0,1e9),rep=adminNum('adm-rep',0,1e6),day=adminNum('adm-day',1,1e6),tier=adminNum('adm-garage',0,3);if([cash,rep,day,tier].includes(null))throw Error('Enter valid player values');state.cash=cash;state.rep=rep;state.day=day;state.garage=tier;msg='Player values applied';break}
  case 'maxall':state.cash=1e9;state.rep=1e6;state.garage=3;msg='Cash, REP and garage maxed';break;
@@ -598,7 +598,8 @@ function validateSave(){
  state.rep=Number.isFinite(state.rep)?Math.max(0,state.rep):0;
  state.day=Number.isFinite(state.day)?Math.max(1,state.day):1;
  state.garage=Number.isInteger(state.garage)?clamp(state.garage,0,3):0;
- state.cars=state.cars.filter(c=>c&&(MODELS[c.model]||c.adminPrototype===true&&c.model===-1)).map(c=>{
+ state.cars=state.cars.filter(c=>c&&(MODELS[c.model]||c.adminPrototype===true)).map(c=>{
+  if(c.adminPrototype===true&&(!Number.isInteger(c.model)||c.model<0))c.model=MODELS.length-1;
   c.parts=Array.isArray(c.parts)?c.parts.filter(id=>CONFIG.parts.some(p=>p.id===id)):[];
   c.tune={boost:0,final:3.7,pressure:32,...(c.tune||{})};
   c.components={...fresh.cars[0].components,...(c.components||{})};
