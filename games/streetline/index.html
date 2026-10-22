@@ -97,6 +97,7 @@ const ENGINE_SLOTS=[
 ];
 const ENGINE_SLOT_MAP=Object.fromEntries(ENGINE_SLOTS.map(v=>[v[0],v]));
 function engineSpec(c){
+ if(isAdminCar(c))return {architecture:'V12',cylinders:12,liters:8.4,redline:12000,layout:'Longitudinal',code:'VOID-OMEGA-V12'};
  const m=model(c),id=m.id,cat=m.category;
  const architecture=['Inline-3','Inline-4','Flat-4','Inline-5','V6','Inline-6','V8','V10','V12','Flat-6'][id%10];
  const cylinders={'Inline-3':3,'Inline-4':4,'Flat-4':4,'Inline-5':5,'V6':6,'Inline-6':6,'V8':8,'V10':10,'V12':12,'Flat-6':6}[architecture];
