@@ -271,8 +271,20 @@ function carArt(ctx,c,x,y,scale=1){
  // Rear wing attached to deck; not an unconnected decorative polygon.
  if(c.wing||(c.parts||[]).includes('wing')){
   const wy=p.deck-20-(sty.wingSize||0)*6;
-  line([[p.left+30,p.deck+2],[p.left+34,wy+6]],'#2a363d',5);
-  if(sty.wingSize===4){line([[p.left+21,wy+9],[p.left+26,wy-11]],'#a8adb4',5);line([[p.left+68,wy+9],[p.left+73,wy-11]],'#a8adb4',5);shape([[p.left-4,wy-13],[p.left+105,wy-15],[p.left+100,wy-3],[p.left-6,wy-2]],'#20262d','#86919c');shape([[p.left-7,wy-19],[p.left+1,wy-19],[p.left+1,wy+3],[p.left-7,wy+3]],'#161b21','#75828b');shape([[p.left+100,wy-19],[p.left+108,wy-19],[p.left+108,wy+3],[p.left+100,wy+3]],'#161b21','#75828b')}else shape([[p.left+6,wy],[p.left+83,wy-3],[p.left+82,wy+6],[p.left+6,wy+7]],'#17232c','#526470');
+  if(sty.wingSize===4){
+   // Drag wing extends BEHIND the rear bumper (left side of this side-view car).
+   // Long horizontal wing plane and two triangulated supports from the trunk.
+   const rear=p.left, deck=p.deck, out=rear-86, wingY=deck-13;
+   line([[rear+37,deck+3],[rear-13,wingY+3]],'#3a424a',5);
+   line([[rear+25,deck+5],[rear-42,wingY+3]],'#65717c',4);
+   line([[rear+37,deck+3],[rear-42,wingY+3]],'#a5adb4',2);
+   shape([[out,wingY-6],[rear+10,wingY-6],[rear+13,wingY-1],[out-3,wingY]],'#20252d','#929ba5');
+   shape([[out-5,wingY-13],[out+2,wingY-13],[out+2,wingY+7],[out-5,wingY+7]],'#151b22','#71808d');
+   shape([[rear+8,wingY-10],[rear+13,wingY-10],[rear+13,wingY+4],[rear+8,wingY+4]],'#151b22','#71808d');
+  }else{
+   line([[p.left+30,p.deck+2],[p.left+34,wy+6]],'#2a363d',5);
+   shape([[p.left+6,wy],[p.left+83,wy-3],[p.left+82,wy+6],[p.left+6,wy+7]],'#17232c','#526470');
+  }
  }
  g.restore();
  wheel(p.rear);wheel(p.front);
