@@ -1,6 +1,6 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>FRONTLINE | GAMEZ</title><style>
 *{box-sizing:border-box}body{margin:0;overflow:hidden;background:#090f14;color:#e8f0f3;font:14px 'Segoe UI',Arial,sans-serif}canvas{display:block}button,select,input{font:inherit}button{cursor:pointer}#menu,#pause{position:fixed;inset:0;background:linear-gradient(90deg,#071018f7 0%,#091620e9 43%,#0710188a 100%);display:flex;align-items:center;z-index:5}#pause{display:none;justify-content:center;background:#071018dc;z-index:6}.panel{width:min(610px,90vw);margin-left:clamp(24px,7vw,120px)}.eyebrow{font-size:12px;letter-spacing:6px;color:#f1b877;font-weight:800}.title{font-size:clamp(60px,9vw,126px);letter-spacing:-5px;font-weight:1000;line-height:.95;margin:14px 0 20px}.subtitle{font-size:15px;letter-spacing:3px;color:#8c9eaa;margin-bottom:34px}.line{height:1px;background:linear-gradient(90deg,#d8a66d,transparent);margin-bottom:28px}.btn{display:block;width:min(370px,100%);text-align:left;padding:17px 23px;margin:10px 0;border:1px solid #7d91a04a;background:#1a2b36cf;color:#e7f2f6;letter-spacing:2px;font-weight:800;transition:.15s}.btn:hover{background:#e5ac72;color:#0a1219;transform:translateX(5px)}.btn.primary{background:#e6b27b;color:#12191e}.muted{font-size:12px;color:#95a8b4;line-height:1.7}.settings{margin-top:20px;display:flex;gap:16px;flex-wrap:wrap}.settings label{font-size:11px;letter-spacing:1px;color:#b3c3cb}.settings select,.settings input{display:block;margin-top:8px;background:#192b35;color:#e6f0f4;border:1px solid #54707d;padding:8px;border-radius:3px}.settings input{width:130px}#hud{position:fixed;inset:0;pointer-events:none;display:none;text-shadow:0 2px 6px #000}#cross{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font:25px monospace;color:#e6f2e9}#top{position:absolute;top:20px;left:25px;font-weight:800;letter-spacing:3px;color:#e8f3f7}#timer{position:absolute;top:20px;left:50%;transform:translateX(-50%);font-size:23px;font-weight:900}#score{position:absolute;top:25px;right:25px;letter-spacing:2px}#lower{position:absolute;left:28px;bottom:27px;font-size:14px;letter-spacing:1px}#hp{font-size:35px;font-weight:900}#ammo{position:absolute;right:32px;bottom:26px;text-align:right;font-size:40px;font-weight:900}#ammo small{font-size:17px;color:#c5d3dc}#prompt{position:absolute;bottom:21%;left:50%;transform:translateX(-50%);color:#f3d4a9;letter-spacing:2px}#hit{position:absolute;inset:0;background:#ad2a1b;opacity:0;transition:opacity .15s}#feed{position:absolute;top:78px;right:24px;color:#e9d2b4;font-size:12px;text-align:right}#status{position:absolute;top:65px;left:25px;color:#b8d1dd;font-size:11px;letter-spacing:1px}#pause .panel{margin:0;text-align:center}#pause .btn{margin:12px auto}#notice{position:absolute;top:33%;left:50%;transform:translateX(-50%);font-size:27px;font-weight:900;letter-spacing:3px;color:#f6dfbd;text-align:center;opacity:0;transition:opacity .2s}#loading{position:fixed;inset:0;display:grid;place-items:center;background:#08131a;z-index:10;color:#f5cf9e;font-size:20px;letter-spacing:5px}#loading[hidden]{display:none}#loadout .loadout,#mapSelect .loadout{background:#15252e;border:1px solid #667883;color:#c5d3da;padding:14px 2px;font-size:11px;font-weight:800;letter-spacing:1px;cursor:pointer}#loadout .loadout.active,#mapSelect .loadout.active{background:#e6b27b;border-color:#e6b27b;color:#111a20}#loadout .loadout:hover,#mapSelect .loadout:hover{border-color:#f1c993}#scopeOverlay{display:none;position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at center,transparent 0 20%,#080b0e 20.5% 100%);z-index:2}#scopeOverlay:after{content:'';position:absolute;left:50%;top:50%;width:min(40vw,40vh);height:min(40vw,40vh);border:2px solid #182024;border-radius:50%;transform:translate(-50%,-50%);box-shadow:0 0 0 1px #7b8589 inset}#scopeReticle{position:absolute;left:50%;top:50%;width:25px;height:25px;transform:translate(-50%,-50%);z-index:3}#scopeReticle:before,#scopeReticle:after{content:'';position:absolute;background:#161d1b}#scopeReticle:before{width:1px;height:26px;left:12px}#scopeReticle:after{height:1px;width:26px;top:12px}#buildVersion{position:fixed;right:18px;bottom:14px;z-index:20;font:700 13px 'Segoe UI',Arial,sans-serif;letter-spacing:2px;color:#f0c78f;background:#07131acc;border:1px solid #e0b67877;padding:9px 13px;pointer-events:none}</style></head><body>
-<div id="buildVersion">BUILD v1.7</div><div id="loading">LOADING FRONTLINE...</div>
+<div id="buildVersion">BUILD v1.8</div><div id="loading">LOADING FRONTLINE...</div>
 <div id="menu"><div class="panel"><div class="eyebrow">GAMEZ // TACTICAL SERIES 001</div><div class="title">FRONT<br>LINE<span style="color:#e6b27b">.</span></div><div class="subtitle">PRECISION. MOVEMENT. CONTROL.</div><div class="line"></div><button id="play" class="btn primary">▶ DEPLOY — TRAINING MATCH</button><button id="how" class="btn">▤ CONTROLS &amp; OBJECTIVES</button><button id="settingsBtn" class="btn">⚙ SETTINGS</button><div id="instructions" class="muted" style="display:none;max-width:430px">WASD move · SHIFT sprint · CTRL crouch · HOLD C slide while sprinting · SPACE jump<br>Mouse aim · Left click fire · Right click aim down sights<br>R reload · Choose your weapon before deployment · ESC pause<br>Eliminate moving training targets. Hits on metal, concrete, and dirt produce different impact effects.</div><div id="settingsPanel" style="display:none"><div class="settings"><label>GRAPHICS<select id="quality"><option value="medium">BALANCED</option><option value="low">PERFORMANCE</option><option value="high">HIGH QUALITY</option></select></label><label>SENSITIVITY<input id="sensitivity" type="range" min="0.8" max="4" step=".1" value="2"></label><label>FIELD OF VIEW<select id="fov"><option>75</option><option selected>85</option><option>95</option><option>105</option></select></label></div></div><p class="muted">SINGLE-PLAYER TRAINING BUILD · PRIVATE MULTIPLAYER COMING LATER<br>Headphones recommended. Audio begins after deployment.</p></div></div>
 <div id="pause"><div class="panel"><div class="eyebrow">MATCH INTERRUPTED</div><div class="title" style="font-size:70px">PAUSED</div><button id="resume" class="btn primary">▶ RESUME</button><button id="return" class="btn">⌂ MAIN MENU</button></div></div>
 <div id="deployment" style="display:none;position:fixed;inset:0;z-index:18;background:#071118f5;align-items:center;justify-content:center;overflow:auto"><div class="panel" style="max-width:690px;width:90vw"><div class="eyebrow">FRONTLINE // MISSION SETUP</div><h1 style="color:#e9f1f1;font-size:32px;margin:12px 0">DEPLOYMENT</h1><div class="muted" style="margin:18px 0 8px">SELECT MAP</div><div id="mapSelect" style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin-bottom:16px"><button class="loadout active" data-map="0">WAREHOUSE</button><button class="loadout" data-map="1">DESERT</button><button class="loadout" data-map="2">FOREST</button><button class="loadout" data-map="3">CITY</button><button class="loadout" data-map="4">OUTPOST</button></div><div id="mapInfo" class="muted" style="margin-bottom:20px">Industrial warehouse · close quarters</div><div class="muted" style="letter-spacing:2px;margin-bottom:9px">SELECT YOUR PRIMARY WEAPON</div><div id="loadout" style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;max-width:520px;margin-bottom:20px"><button class="loadout active" data-gun="0">AR</button><button class="loadout" data-gun="1">SNIPER</button><button class="loadout" data-gun="2">PISTOL</button><button class="loadout" data-gun="3">RPG</button><button class="loadout" data-gun="4">SHOTGUN</button></div><div id="loadoutInfo" class="muted" style="margin-bottom:14px">MK18 · Assault rifle · 30 rounds</div><button id="confirmDeploy" class="btn primary">▶ START MATCH</button><button id="cancelDeploy" class="btn">← BACK TO MENU</button></div></div><div id="hud"><div id="hit"></div><div id="top">FRONTLINE <span style="color:#e6b27b">/</span> WAREHOUSE</div><div id="timer">05:00</div><div id="score">ELIMINATIONS <span id="kills">0</span> · DEATHS <span id="deaths">0</span></div><div id="status">SOLO TRAINING · TARGETS RESPAWN</div><div id="cross">+</div><div id="scopeOverlay"><div id="scopeReticle"></div></div><div id="feed"></div><div id="notice"></div><div id="prompt"></div><div id="lower">HEALTH <span id="hp">100</span><br><span id="stance">STANDING</span></div><div id="ammo"><span id="rounds">30</span><small> / <span id="reserve">180</span></small><div style="font-size:13px;color:#d9b58d;letter-spacing:3px" id="weaponName">MK18 · ASSAULT RIFLE</div></div></div>
@@ -360,14 +360,81 @@ function createMap(id){
  if(id===2){for(let i=0;i<95;i++){const x=-49+(i*37%99),z=-48+(i*61%97);if(Math.abs(x)<9&&z>22)continue;if(i%5===0)destructibleBlock(x,.7,z,3,1.4,3,stone);else tree(x,z)}for(let i=0;i<12;i++)block(-39+i*7,.03,8,3,.06,3,dune,false)}
  if(id===3){for(let x of [-39,-18,18,39])for(let z of [-36,-13,14,36]){const h=7+((Math.abs(x*3+z*7))%9);block(x,h/2,z,11,h,12,stone);block(x,h+.15,z,12,.3,13,roof);for(let y=3;y<h-1;y+=3){block(x+5.6,y,z, .12,1.1,2,roof,false);block(x-5.6,y,z,.12,1.1,2,roof,false)}}for(let z=-40;z<40;z+=10)block(0,.03,z,.12,.06,4,sand,false);for(let z of [-26,0,25])for(let x of [-8,8])destructibleBlock(x,.9,z,3,1.8,2,stone)}
  if(id===4){for(const [x,z,w,h,d] of [[-31,-29,17,5,13],[30,-28,16,7,16],[-32,23,18,6,16],[29,24,17,6,15]]){block(x,h/2,z,w,h,d,stone);block(x,h+.2,z,w+1,.4,d+1,roof)}for(let x=-36;x<=36;x+=12){destructibleBlock(x,1.5,0,7,3,2,fence);block(x,1.1,-14,5,2.2,2,dune)}for(let z=-34;z<=35;z+=14){destructibleBlock(-8,1.1,z,2,2.2,5,stone);destructibleBlock(10,1.1,z,2,2.2,5,stone)}}
+
+// Additional distinct map landmarks and cover, with collision where appropriate.
+if(id===1){
+ for(let x of [-39,-15,16,38])for(let z of [-35,6,36]){if(Math.abs(x)<18&&z>24)continue;destructibleBlock(x,.85,z,4,1.7,2.5,dune)}
+ for(const [x,z] of [[-40,-5],[39,-8],[-6,-43]]){block(x,2,z,1.4,4,1.4,stone);block(x,4.3,z,3,.4,3,roof)}
+ for(let i=0;i<16;i++){const x=-46+(i*19%90),z=-42+(i*31%82);block(x,.18,z,2,.36,1.5,stone,false)}
+}
+if(id===2){
+ for(const [x,z] of [[-30,-26],[29,-24],[-32,27],[31,30]]){destructibleBlock(x,.8,z,6,1.6,2,bark);destructibleBlock(x+3,.8,z+2,2,1.6,5,bark)}
+ for(let i=0;i<22;i++){const x=-44+(i*23%88),z=-41+(i*47%84);if(Math.abs(x)<8&&z>20)continue;block(x,.15,z,1.4,.3,1.4,grass,false)}
+}
+if(id===3){
+ for(const z of [-26,0,27]){destructibleBlock(-9,.8,z,5,1.6,2,stone);destructibleBlock(9,.8,z,5,1.6,2,stone)}
+ for(const [x,z] of [[-29,1],[29,1],[-29,25],[29,-25]]){block(x,1.4,z,1,2.8,1,roof);block(x,2.9,z,1.8,.18,1.8,stone)}
+ for(let z=-45;z<=45;z+=12){block(-2,.02,z,.15,.05,3,sand,false);block(2,.02,z,.15,.05,3,sand,false)}
+}
+if(id===4){
+ for(const [x,z] of [[-28,-4],[27,-4],[-28,12],[28,12],[0,-26]]){destructibleBlock(x,1.1,z,5,2.2,2,stone)}
+ for(const [x,z] of [[-40,-40],[40,-40],[-40,40],[40,40]]){block(x,4,z,1.5,8,1.5,stone);block(x,8.2,z,4,.5,4,roof)}
+ for(let x=-30;x<=30;x+=15)destructibleBlock(x,.6,37,4,1.2,2,dune);
+}
  group.visible=false;
 }
+
+const supplyStations=[],supplyRoot=new THREE.Group();scene.add(supplyRoot);
+const supplyGreen=new THREE.MeshStandardMaterial({color:0x314d3b,roughness:.7,metalness:.2});
+const supplyLight=new THREE.MeshBasicMaterial({color:0x9ff3ad});
+const supplyTextCanvas=document.createElement('canvas');supplyTextCanvas.width=256;supplyTextCanvas.height=96;
+const supplyCtx=supplyTextCanvas.getContext('2d');supplyCtx.fillStyle='#263c2d';supplyCtx.fillRect(0,0,256,96);supplyCtx.fillStyle='#d7f6d8';supplyCtx.font='bold 38px Arial';supplyCtx.textAlign='center';supplyCtx.fillText('AMMO',128,61);
+const supplyLabel=new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(supplyTextCanvas),transparent:false});
+function makeSupplyStation(mapId,x,z){
+ const group=new THREE.Group();group.position.set(x,0,z);supplyRoot.add(group);
+ const body=new THREE.Mesh(boxGeo,supplyGreen);body.scale.set(1.45,.82,.92);body.position.y=.43;group.add(body);
+ const lid=new THREE.Mesh(boxGeo,supplyGreen);lid.scale.set(1.53,.13,.99);lid.position.y=.91;group.add(lid);
+ for(const side of [-1,1]){const strap=new THREE.Mesh(boxGeo,metal);strap.scale.set(.12,.96,1.02);strap.position.set(side*.52,.48,0);group.add(strap)}
+ const label=new THREE.Mesh(new THREE.PlaneGeometry(.98,.36),supplyLabel);label.position.set(0,.54,.469);group.add(label);
+ const beacon=new THREE.Mesh(new THREE.BoxGeometry(.24,.11,.24),supplyLight);beacon.position.set(0,1.08,0);group.add(beacon);
+ const station={mapId,x,z,group,beacon,nextUse:0};supplyStations.push(station);
+}
+const supplySpawns=[
+ [[-8,34],[26,3],[-27,-7],[6,-30]],
+ [[0,31],[-30,2],[28,-5],[2,-35]],
+ [[0,31],[-25,-7],[26,7],[0,-32]],
+ [[0,30],[-8,0],[8,-27],[0,-40]],
+ [[0,30],[-26,7],[25,6],[0,-31]]
+];
+for(let m=0;m<5;m++)for(const [x,z] of supplySpawns[m])makeSupplyStation(m,x,z);
+let nearestSupply=null;
+function refillAtStation(){
+ if(!active||paused||!nearestSupply||elapsed<nearestSupply.nextUse)return;
+ const station=nearestSupply,g=guns[weapon],before=g.reserve;
+ g.reserve=Math.min(g.mag*8,g.reserve+g.mag*4);
+ if(g.reserve===before){notice('AMMO ALREADY FULL');return}
+ station.nextUse=elapsed+15;updateAmmo();notice('AMMO RESTOCKED +'+(g.reserve-before));playTone(660,.1,.1);setTimeout(()=>playTone(880,.14,.08),90);
+}
+function updateSupplies(){
+ nearestSupply=null;let best=2.7;
+ for(const station of supplyStations){
+  station.group.visible=station.mapId===selectedMap;
+  if(station.mapId!==selectedMap)continue;
+  const d=Math.hypot(player.pos.x-station.x,player.pos.z-station.z);
+  station.beacon.material=supplyLight;
+  if(d<best){best=d;nearestSupply=station}
+ }
+ const prompt=$('prompt');
+ if(nearestSupply){const wait=Math.ceil(Math.max(0,nearestSupply.nextUse-elapsed));prompt.textContent=wait?'AMMO CRATE RECHARGING · '+wait+'s':'PRESS E · REFILL AMMO';prompt.style.opacity=1}
+ else if(prompt.textContent.includes('AMMO'))prompt.style.opacity=0;
+}
+window.addEventListener('keydown',e=>{if(e.code==='KeyE'&&!e.repeat)refillAtStation()});
 function chooseMap(id){
  selectedMap=id;world.visible=id===0;
  for(let i=1;i<=4;i++){createMap(i);mapGroups[i].visible=i===id}
  colliders.length=0;colliders.push(...(id===0?warehouseColliders:mapCollision[id]));
  surfaces.length=0;surfaces.push(...(id===0?warehouseSurfaces:mapSurface[id]));
- for(const t of targets){t.group.visible=true;for(const proxy of t.hitboxes)surfaces.push(proxy)}syncPhysicsStatics()
+ for(const t of targets){t.group.visible=true;for(const proxy of t.hitboxes)surfaces.push(proxy)}for(const station of supplyStations)station.group.visible=station.mapId===id;syncPhysicsStatics()
  scene.background=new THREE.Color(id===1?0xc6b79c:id===2?0x9eb2b1:id===3?0x9ca9b4:id===4?0x9daeb6:0x8296a0);
  scene.fog.color.copy(scene.background);
  $('top').innerHTML='FRONTLINE <span style="color:#e6b27b">/</span> '+mapNames[id];
@@ -382,7 +449,7 @@ $('cancelDeploy').onclick=()=>{$('deployment').style.display='none';$('menu').st
 $('resume').onclick=()=>renderer.domElement.requestPointerLock?.();
 $('return').onclick=()=>{started=false;active=false;paused=false;document.exitPointerLock?.();$('pause').style.display='none';$('menu').style.display='flex';$('hud').style.display='none';$('scopeOverlay').style.display='none'};
 let lockAt=0;document.addEventListener('pointerlockchange',()=>{active=started&&document.pointerLockElement===renderer.domElement;lockAt=performance.now()+200;if(started){paused=!active;$('pause').style.display=paused?'flex':'none'}});renderer.domElement.addEventListener('click',()=>{if(started&&!active)renderer.domElement.requestPointerLock?.()});document.addEventListener('mousemove',e=>{if(!active||performance.now()<lockAt||Math.abs(e.movementX)>140||Math.abs(e.movementY)>140)return;const sens=Number($('sensitivity').value)*.001*(player.ads?(weapon===1?.12:weapon===3?.45:.55):1);yaw-=e.movementX*sens;pitch=Math.max(-1.48,Math.min(1.48,pitch-e.movementY*sens))});document.addEventListener('keydown',e=>{keys[e.code]=true;if(e.code==='KeyR'&&!e.repeat)reload();if(e.code==='Space')e.preventDefault()});document.addEventListener('keyup',e=>keys[e.code]=false);document.addEventListener('mousedown',e=>{if(e.button===0)keys.Mouse0=true;if(e.button===2)keys.Mouse2=true});document.addEventListener('mouseup',e=>{if(e.button===0)keys.Mouse0=false;if(e.button===2)keys.Mouse2=false});document.addEventListener('contextmenu',e=>e.preventDefault());window.addEventListener('blur',()=>{for(const k in keys)keys[k]=false});$('quality').onchange=()=>{const q=$('quality').value;renderer.setPixelRatio(Math.min(devicePixelRatio,q==='low'?1:q==='high'?Math.min(devicePixelRatio,2):Math.min(devicePixelRatio,1.5)));scene.fog.far=q==='low'?115:185};$('fov').onchange=()=>{camera.fov=Number($('fov').value);camera.updateProjectionMatrix()};
-function tick(now){requestAnimationFrame(tick);const dt=Math.min(.04,(now-last)/1000);last=now;if(started&&active){elapsed+=dt;const wantsCrouch=!!(keys.ControlLeft||keys.ControlRight),inputSprint=!!keys.ShiftLeft,holdSlide=!!keys.KeyC;
+function tick(now){requestAnimationFrame(tick);const dt=Math.min(.04,(now-last)/1000);last=now;if(started&&active){elapsed+=dt;updateSupplies();const wantsCrouch=!!(keys.ControlLeft||keys.ControlRight),inputSprint=!!keys.ShiftLeft,holdSlide=!!keys.KeyC;
 const dx=Number(!!keys.KeyD)-Number(!!keys.KeyA),dz=Number(!!keys.KeyW)-Number(!!keys.KeyS),len=Math.hypot(dx,dz)||1;
 const forwardX=-Math.sin(yaw),forwardZ=-Math.cos(yaw),rightX=Math.cos(yaw),rightZ=-Math.sin(yaw);
 const inputX=(rightX*dx+forwardX*dz)/len,inputZ=(rightZ*dx+forwardZ*dz)/len;
