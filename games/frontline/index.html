@@ -1,6 +1,6 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>FRONTLINE | GAMEZ</title><style>
 *{box-sizing:border-box}body{margin:0;overflow:hidden;background:#090f14;color:#e8f0f3;font:14px 'Segoe UI',Arial,sans-serif}canvas{display:block}button,select,input{font:inherit}button{cursor:pointer}#menu,#pause{position:fixed;inset:0;background:linear-gradient(90deg,#071018f7 0%,#091620e9 43%,#0710188a 100%);display:flex;align-items:center;z-index:5}#pause{display:none;justify-content:center;background:#071018dc;z-index:6}.panel{width:min(610px,90vw);margin-left:clamp(24px,7vw,120px)}.eyebrow{font-size:12px;letter-spacing:6px;color:#f1b877;font-weight:800}.title{font-size:clamp(60px,9vw,126px);letter-spacing:-5px;font-weight:1000;line-height:.95;margin:14px 0 20px}.subtitle{font-size:15px;letter-spacing:3px;color:#8c9eaa;margin-bottom:34px}.line{height:1px;background:linear-gradient(90deg,#d8a66d,transparent);margin-bottom:28px}.btn{display:block;width:min(370px,100%);text-align:left;padding:17px 23px;margin:10px 0;border:1px solid #7d91a04a;background:#1a2b36cf;color:#e7f2f6;letter-spacing:2px;font-weight:800;transition:.15s}.btn:hover{background:#e5ac72;color:#0a1219;transform:translateX(5px)}.btn.primary{background:#e6b27b;color:#12191e}.muted{font-size:12px;color:#95a8b4;line-height:1.7}.settings{margin-top:20px;display:flex;gap:16px;flex-wrap:wrap}.settings label{font-size:11px;letter-spacing:1px;color:#b3c3cb}.settings select,.settings input{display:block;margin-top:8px;background:#192b35;color:#e6f0f4;border:1px solid #54707d;padding:8px;border-radius:3px}.settings input{width:130px}#hud{position:fixed;inset:0;pointer-events:none;display:none;text-shadow:0 2px 6px #000}#cross{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font:25px monospace;color:#e6f2e9}#top{position:absolute;top:20px;left:25px;font-weight:800;letter-spacing:3px;color:#e8f3f7}#timer{position:absolute;top:20px;left:50%;transform:translateX(-50%);font-size:23px;font-weight:900}#score{position:absolute;top:25px;right:25px;letter-spacing:2px}#lower{position:absolute;left:28px;bottom:27px;font-size:14px;letter-spacing:1px}#hp{font-size:35px;font-weight:900}#ammo{position:absolute;right:32px;bottom:26px;text-align:right;font-size:40px;font-weight:900}#ammo small{font-size:17px;color:#c5d3dc}#prompt{position:absolute;bottom:21%;left:50%;transform:translateX(-50%);color:#f3d4a9;letter-spacing:2px}#hit{position:absolute;inset:0;background:#ad2a1b;opacity:0;transition:opacity .15s}#feed{position:absolute;top:78px;right:24px;color:#e9d2b4;font-size:12px;text-align:right}#status{position:absolute;top:65px;left:25px;color:#b8d1dd;font-size:11px;letter-spacing:1px}#pause .panel{margin:0;text-align:center}#pause .btn{margin:12px auto}#notice{position:absolute;top:33%;left:50%;transform:translateX(-50%);font-size:27px;font-weight:900;letter-spacing:3px;color:#f6dfbd;text-align:center;opacity:0;transition:opacity .2s}#loading{position:fixed;inset:0;display:grid;place-items:center;background:#08131a;z-index:10;color:#f5cf9e;font-size:20px;letter-spacing:5px}#loading[hidden]{display:none}#loadout .loadout,#mapSelect .loadout{background:#15252e;border:1px solid #667883;color:#c5d3da;padding:14px 2px;font-size:11px;font-weight:800;letter-spacing:1px;cursor:pointer}#loadout .loadout.active,#mapSelect .loadout.active{background:#e6b27b;border-color:#e6b27b;color:#111a20}#loadout .loadout:hover,#mapSelect .loadout:hover{border-color:#f1c993}#scopeOverlay{display:none;position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at center,transparent 0 20%,#080b0e 20.5% 100%);z-index:2}#scopeOverlay:after{content:'';position:absolute;left:50%;top:50%;width:min(40vw,40vh);height:min(40vw,40vh);border:2px solid #182024;border-radius:50%;transform:translate(-50%,-50%);box-shadow:0 0 0 1px #7b8589 inset}#scopeReticle{position:absolute;left:50%;top:50%;width:25px;height:25px;transform:translate(-50%,-50%);z-index:3}#scopeReticle:before,#scopeReticle:after{content:'';position:absolute;background:#161d1b}#scopeReticle:before{width:1px;height:26px;left:12px}#scopeReticle:after{height:1px;width:26px;top:12px}#buildVersion{position:fixed;right:18px;bottom:14px;z-index:20;font:700 13px 'Segoe UI',Arial,sans-serif;letter-spacing:2px;color:#f0c78f;background:#07131acc;border:1px solid #e0b67877;padding:9px 13px;pointer-events:none}</style></head><body>
-<div id="buildVersion">BUILD v2.2</div><div id="loading">LOADING FRONTLINE...</div>
+<div id="buildVersion">BUILD v2.3</div><div id="loading">LOADING FRONTLINE...</div>
 <div id="menu"><div class="panel"><div class="eyebrow">GAMEZ // TACTICAL SERIES 001</div><div class="title">FRONT<br>LINE<span style="color:#e6b27b">.</span></div><div class="subtitle">PRECISION. MOVEMENT. CONTROL.</div><div class="line"></div><button id="play" class="btn primary">▶ DEPLOY — TRAINING MATCH</button><button id="how" class="btn">▤ CONTROLS &amp; OBJECTIVES</button><button id="settingsBtn" class="btn">⚙ SETTINGS</button><div id="instructions" class="muted" style="display:none;max-width:430px">WASD move · SHIFT sprint · CTRL crouch · HOLD C slide while sprinting · SPACE jump<br>Mouse aim · Left click fire · Right click aim down sights<br>R reload · Choose your weapon before deployment · ESC pause<br>Eliminate moving training targets. Hits on metal, concrete, and dirt produce different impact effects.</div><div id="settingsPanel" style="display:none"><div class="settings"><label>GRAPHICS<select id="quality"><option value="medium">BALANCED</option><option value="low">PERFORMANCE</option><option value="high">HIGH QUALITY</option></select></label><label>SENSITIVITY<input id="sensitivity" type="range" min="0.8" max="4" step=".1" value="2"></label><label>FIELD OF VIEW<select id="fov"><option>75</option><option selected>85</option><option>95</option><option>105</option></select></label></div></div><p class="muted">SINGLE-PLAYER TRAINING BUILD · PRIVATE MULTIPLAYER COMING LATER<br>Headphones recommended. Audio begins after deployment.</p></div></div>
 <div id="pause"><div class="panel"><div class="eyebrow">MATCH INTERRUPTED</div><div class="title" style="font-size:70px">PAUSED</div><button id="resume" class="btn primary">▶ RESUME</button><button id="return" class="btn">⌂ MAIN MENU</button></div></div>
 <div id="deployment" style="display:none;position:fixed;inset:0;z-index:18;background:#071118f5;align-items:center;justify-content:center;overflow:auto"><div class="panel" style="max-width:690px;width:90vw"><div class="eyebrow">FRONTLINE // MISSION SETUP</div><h1 style="color:#e9f1f1;font-size:32px;margin:12px 0">DEPLOYMENT</h1><div class="muted" style="margin:18px 0 8px">GAME MODE</div><div id="modeSelect" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px"><button class="loadout active" data-mode="ffa">FREE FOR ALL</button><button class="loadout" data-mode="tdm">TEAM DEATHMATCH</button><button class="loadout" data-mode="elimination">ELIMINATION</button></div><div class="muted" style="margin:18px 0 8px">SELECT MAP</div><div id="mapSelect" style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin-bottom:16px"><button class="loadout active" data-map="0">WAREHOUSE</button><button class="loadout" data-map="1">DESERT</button><button class="loadout" data-map="2">FOREST</button><button class="loadout" data-map="3">CITY</button><button class="loadout" data-map="4">OUTPOST</button></div><div id="mapInfo" class="muted" style="margin-bottom:20px">Industrial warehouse · close quarters</div><div class="muted" style="letter-spacing:2px;margin-bottom:9px">SELECT YOUR PRIMARY WEAPON</div><div id="loadout" style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;max-width:520px;margin-bottom:20px"><button class="loadout active" data-gun="0">AR</button><button class="loadout" data-gun="1">SNIPER</button><button class="loadout" data-gun="2">PISTOL</button><button class="loadout" data-gun="3">RPG</button><button class="loadout" data-gun="4">SHOTGUN</button></div><div id="loadoutInfo" class="muted" style="margin-bottom:14px">MK18 · Assault rifle · 30 rounds</div><button id="confirmDeploy" class="btn primary">▶ START MATCH</button><button id="cancelDeploy" class="btn">← BACK TO MENU</button></div></div><div id="tabBoard" style="display:none;position:fixed;top:10%;left:50%;transform:translateX(-50%);z-index:20;width:min(660px,92vw);max-height:75vh;overflow:auto;background:#08151dee;border:1px solid #7b9199;padding:18px;color:#e6eeee;pointer-events:none"><h2>MATCH SCOREBOARD</h2><div id="boardMode"></div><table style="width:100%;text-align:left"><thead><tr><th>PLAYER</th><th>TEAM</th><th>KILLS</th><th>DEATHS</th><th>K/D</th></tr></thead><tbody id="boardRows"></tbody></table></div><div id="hud"><div id="hit"></div><div id="top">FRONTLINE <span style="color:#e6b27b">/</span> WAREHOUSE</div><div id="timer">05:00</div><div id="score">ELIMINATIONS <span id="kills">0</span> · DEATHS <span id="deaths">0</span></div><div id="status">SOLO TRAINING · TARGETS RESPAWN</div><div id="cross">+</div><div id="scopeOverlay"><div id="scopeReticle"></div></div><div id="feed"></div><div id="notice"></div><div id="prompt"></div><div id="lower">HEALTH <span id="hp">100</span><br><span id="stance">STANDING</span></div><div id="ammo"><span id="rounds">30</span><small> / <span id="reserve">180</span></small><div style="font-size:13px;color:#d9b58d;letter-spacing:3px" id="weaponName">MK18 · ASSAULT RIFLE</div></div></div>
@@ -344,6 +344,36 @@ for(let i=0;i<18;i++){const x=-39+(i%6)*15,z=-34+Math.floor(i/6)*31;if(Math.hypo
  removeWarehouseSolid(x,1.1,z,3,2.2,2.2);
  voxelizeWarehouseProp(x,1.1,z,3,2.2,2.2,wood,35);
 }
+
+function subdivideLargeWarehouseProps(){
+ // Divide sizable interior objects into persistent, separately damageable sections.
+ // Do not voxelize map perimeter, ceilings, thin trim, or long decorative beams.
+ for(const original of [...destructibleCells]){
+  if(original.broken||!original.whole||original.mapId!==0||!original.collider)continue;
+  const m=original.mesh,{x,y,z,w,h,d}=original.collider;
+  if(Math.max(w,h,d)<3.1||w*h*d<12||w>35||h>12||d>35||Math.abs(x)+w*.5>50||Math.abs(z)+d*.5>50)continue;
+  const size=1.7;
+  let nx=Math.ceil(w/size),ny=Math.ceil(h/size),nz=Math.ceil(d/size);
+  if(nx*ny*nz>180){const factor=Math.cbrt(nx*ny*nz/180);nx=Math.max(1,Math.ceil(nx/factor));ny=Math.max(1,Math.ceil(ny/factor));nz=Math.max(1,Math.ceil(nz/factor))}
+  // Remove the old all-or-nothing mesh and its original collision box.
+  const si=surfaces.indexOf(m);if(si>=0)surfaces.splice(si,1);
+  const ci=colliders.indexOf(original.collider);if(ci>=0)colliders.splice(ci,1);
+  const oi=destructibleCells.indexOf(original);if(oi>=0)destructibleCells.splice(oi,1);
+  world.remove(m);
+  for(let ix=0;ix<nx;ix++)for(let iy=0;iy<ny;iy++)for(let iz=0;iz<nz;iz++){
+   const cw=w/nx,ch=h/ny,cd=d/nz;
+   const px=x-w*.5+cw*(ix+.5),py=y-h*.5+ch*(iy+.5),pz=z-d*.5+cd*(iz+.5);
+   const mesh=new THREE.Mesh(cellGeo,m.material);
+   mesh.position.set(px,py,pz);mesh.scale.set(cw-.008,ch-.008,cd-.008);
+   mesh.userData.surface=original.surface;world.add(mesh);surfaces.push(mesh);
+   const collider={x:px,y:py,z:pz,w:cw-.008,h:ch-.008,d:cd-.008};
+   colliders.push(collider);
+   const cell={mesh,collider,mapId:0,hp:original.hp,broken:false};
+   mesh.userData.cell=cell;destructibleCells.push(cell);
+  }
+ }
+}
+subdivideLargeWarehouseProps();
 const warehouseColliders=colliders.slice(),warehouseSurfaces=surfaces.slice();
 const mapGroups=[null],mapCollision=[null],mapSurface=[null];
 function createMap(id){
@@ -351,7 +381,27 @@ function createMap(id){
  const group=new THREE.Group();scene.add(group);
  const cc=[],ss=[];mapGroups[id]=group;mapCollision[id]=cc;mapSurface[id]=ss;
  const sand=mat(0xc5aa7b),dune=mat(0xa78d66),pine=mat(0x315444),bark=mat(0x514b3a),grass=mat(0x58775a),stone=mat(0x8e979b),road=mat(0x454d54),roof=mat(0x5e6870),snow=mat(0xa7adb0),fence=mat(0x677b78);
- function block(x,y,z,w,h,d,m,solid=true){const mesh=new THREE.Mesh(boxGeo,m);mesh.position.set(x,y,z);mesh.scale.set(w,h,d);group.add(mesh);mesh.userData.surface='concrete';ss.push(mesh);const collider=solid?{x,y,z,w,h,d}:null;if(collider)cc.push(collider);if(y>0&&Math.abs(x)<51&&Math.abs(z)<51&&w*h*d<5000){const cell={mesh,collider,hp:115,broken:false,mapId:id,whole:true};mesh.userData.cell=cell;destructibleCells.push(cell)}return mesh}
+ function block(x,y,z,w,h,d,m,solid=true){
+ const eligible=y>0&&Math.abs(x)+w*.5<51&&Math.abs(z)+d*.5<51&&w*h*d<5000;
+ const divide=eligible&&solid&&Math.max(w,h,d)>=3.1&&w*h*d>=12&&w<35&&h<12&&d<35;
+ if(divide){
+  let nx=Math.ceil(w/1.7),ny=Math.ceil(h/1.7),nz=Math.ceil(d/1.7);
+  if(nx*ny*nz>180){const factor=Math.cbrt(nx*ny*nz/180);nx=Math.max(1,Math.ceil(nx/factor));ny=Math.max(1,Math.ceil(ny/factor));nz=Math.max(1,Math.ceil(nz/factor))}
+  const holder=new THREE.Group();group.add(holder);
+  for(let ix=0;ix<nx;ix++)for(let iy=0;iy<ny;iy++)for(let iz=0;iz<nz;iz++){
+   const cw=w/nx,ch=h/ny,cd=d/nz;
+   const px=x-w*.5+cw*(ix+.5),py=y-h*.5+ch*(iy+.5),pz=z-d*.5+cd*(iz+.5);
+   const mesh=new THREE.Mesh(boxGeo,m);mesh.position.set(px,py,pz);mesh.scale.set(cw-.008,ch-.008,cd-.008);mesh.userData.surface='concrete';holder.add(mesh);ss.push(mesh);
+   const collider={x:px,y:py,z:pz,w:cw-.008,h:ch-.008,d:cd-.008};cc.push(collider);
+   const cell={mesh,collider,hp:115,broken:false,mapId:id};mesh.userData.cell=cell;destructibleCells.push(cell);
+  }
+  return holder;
+ }
+ const mesh=new THREE.Mesh(boxGeo,m);mesh.position.set(x,y,z);mesh.scale.set(w,h,d);group.add(mesh);mesh.userData.surface='concrete';ss.push(mesh);
+ const collider=solid?{x,y,z,w,h,d}:null;if(collider)cc.push(collider);
+ if(eligible){const cell={mesh,collider,hp:115,broken:false,mapId:id,whole:true};mesh.userData.cell=cell;destructibleCells.push(cell)}
+ return mesh;
+}
  function destructibleBlock(x,y,z,w,h,d,m){const resolution=Math.max(w,h,d)<7?.7:1.1;const sx=Math.max(1,Math.ceil(w/resolution)),sy=Math.max(1,Math.ceil(h/resolution)),sz=Math.max(1,Math.ceil(d/resolution));for(let ix=0;ix<sx;ix++)for(let iy=0;iy<sy;iy++)for(let iz=0;iz<sz;iz++){const cw=w/sx,ch=h/sy,cd=d/sz,px=x-w/2+cw*(ix+.5),py=y-h/2+ch*(iy+.5),pz=z-d/2+cd*(iz+.5);const mesh=new THREE.Mesh(cellGeo,m);mesh.position.set(px,py,pz);mesh.scale.set(cw-.012,ch-.012,cd-.012);mesh.userData.surface='concrete';group.add(mesh);ss.push(mesh);const collider={x:px,y:py,z:pz,w:cw-.012,h:ch-.012,d:cd-.012};cc.push(collider);const cell={mesh,collider,hp:m===wood?45:m===stone?125:85,broken:false,mapId:id};mesh.userData.cell=cell;destructibleCells.push(cell)}}
 
  function tree(x,z){
