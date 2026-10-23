@@ -22,7 +22,7 @@ setTimeout(()=>{if(!window.frontlineReady&&!window.frontlineError){status.textCo
 let THREE;
 try { THREE=await import('https://cdn.jsdelivr.net/npm/three@0.160.1/+esm'); }
 catch(firstError) { try { THREE=await import('https://esm.sh/three@0.160.1'); } catch(secondError) { document.getElementById('loading').hidden=true;document.getElementById('play').textContent='3D ENGINE BLOCKED BY NETWORK';document.getElementById('play').disabled=true;throw secondError; } }
-let RAPIER=null,physicsWorld=null;try{const physics=await import('https://cdn.jsdelivr.net/npm/@dimforge/rapier3d-compat@0.17.3/+esm');await physics.init();RAPIER=physics;physicsWorld=new physics.World({x:0,y:-18,z:0})}catch(err){console.warn('Rapier unavailable; fallback debris',err)}
+let RAPIER=null,physicsWorld=null;try{const physics=await import('https://cdn.jsdelivr.net/npm/@dimforge/rapier3d-compat@0.17.3/+esm');if(typeof physics.init==='function')await physics.init();else if(typeof physics.default==='function')await physics.default();RAPIER=physics;physicsWorld=new physics.World({x:0,y:-18,z:0})}catch(err){console.warn('Rapier unavailable; fallback debris',err)}
 const $=id=>document.getElementById(id),scene=new THREE.Scene();scene.background=new THREE.Color(0x8296a0);scene.fog=new THREE.Fog(0x8296a0,95,200);const camera=new THREE.PerspectiveCamera(85,innerWidth/innerHeight,.06,230),renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,1.75));renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.95;document.body.prepend(renderer.domElement);$('loading').hidden=true;
 const ambient=new THREE.HemisphereLight(0xc8e2f1,0x8d9a9e,3.1);scene.add(ambient);const sun=new THREE.DirectionalLight(0xffe7c7,3.1);sun.position.set(-45,65,22);scene.add(sun);const fill=new THREE.DirectionalLight(0x8eb3d1,.6);fill.position.set(30,20,-20);scene.add(fill);
 const mat=(c,r=1,m=0)=>new THREE.MeshStandardMaterial({color:c,roughness:r,metalness:m});const concrete=mat(0x94999a),groundMat=mat(0xa6a79d),metal=mat(0x687984,.57,.52),darkMetal=mat(0x37454e,.48,.57),yellow=mat(0xe6b15d,.55,.25),brick=mat(0x997a68),wood=mat(0x8b7255),glass=mat(0x89afc4,.12,.4),red=mat(0xb95d4b),olive=mat(0x566a59),black=mat(0x151a1e),skin=mat(0xa78a72),targetMat=mat(0xd5a279);
@@ -200,7 +200,7 @@ function syncPhysicsStatics(){
  physicsWorld.createCollider(RAPIER.ColliderDesc.cuboid(55,.5,55).setFriction(.95),ground);
  physicsStatics.push(ground);
  // Only substantial world solids receive rigid-body colliders; breakable cells use game collision.
- for(const c of colliders){if(c.w*c.h*c.d<4||physicsStatics.length>130)continue;
+ for(const c of colliders){if(destructibleCells.some(cell=>!cell.broken&&cell.collider===c)||c.w*c.h*c.d<4||physicsStatics.length>130)continue;
   const body=physicsWorld.createRigidBody(RAPIER.RigidBodyDesc.fixed().setTranslation(c.x,c.y,c.z));
   physicsWorld.createCollider(RAPIER.ColliderDesc.cuboid(c.w*.5,c.h*.5,c.d*.5),body);
   physicsStatics.push(body);
