@@ -2018,6 +2018,20 @@ renderKitchen();
 renderOrder();
 updateGlaze();
 updateFranBtn();
+window.donutAdminAction=function(action){
+ if(action==='million'||action==='billion'||action==='trillion'){
+  const amount=action==='million'?1e6:action==='billion'?1e9:1e12;
+  S.donuts+=amount;S.totalBaked+=amount;S.runBaked+=amount;
+ }else if(action==='buildings'){BUILDINGS.forEach(b=>S.owned[b.id]=Math.max(1000,S.owned[b.id]));}
+ else if(action==='upgrades'){UPGRADES.forEach(u=>S.bought[u.id]=true);}
+ else if(action==='stars'){S.stars+=100;}
+ else if(action==='tokens'){S.tokens+=10000;}
+ else if(action==='kitchen'){S.kitchen=true;}
+ else if(action==='achievements'){ACHIEVEMENTS.forEach(a=>S.achievements[a.id]=true);renderAchievements();renderSkins();applySkin();}
+ else return false;
+ recompute();updateShop();updateUpgrades();renderKitchen();updateFranBtn();save(false);
+ return true;
+};
 lastTick = Date.now();
 requestAnimationFrame(frame);
 })();
@@ -2036,13 +2050,13 @@ const css=document.createElement('style');css.textContent=`
 #gzAdminBox .gzDanger{border-color:#ff8d86}#gzAdminStatus{min-height:20px;color:#a2f8cf;font-size:12px}#gzAdminClose{float:right}
 `;document.head.appendChild(css);
 
-const overlay=document.createElement('div');overlay.id='gzAdminOverlay';overlay.innerHTML=`<div id="gzAdminBox" role="dialog" aria-modal="true" aria-label="GAMEZ admin panel"><button id="gzAdminClose">✕ Close</button><h2>⚙ GAMEZ ADMIN</h2><p>Local game tools · Admin code 99901</p><div id="gzAdminLock"><input id="gzAdminCode" type="password" autocomplete="off" placeholder="Enter admin code"><button id="gzAdminUnlock" style="margin-top:9px">🔓 Unlock tools</button></div><div id="gzAdminTools" hidden><div id="gzAdminActions"><button data-gz="fullscreen">⛶ Fullscreen</button><button data-gz="screenshot">📸 Screenshot</button><button data-gz="backup">💾 Backup saves</button><button data-gz="restore">📂 Restore saves</button><button data-gz="hide">👁 Hide game UI</button><button data-gz="reload">🔄 Restart game</button><button class="gzDanger" data-gz="clear">🗑 Reset saved progress</button><button data-gz="lock">🔒 Lock admin</button></div><p>Backup/restore works with localStorage saves on this game's origin. Restart reloads the game. Reset permanently clears this game's saved data after confirmation.</p><input type="file" id="gzAdminFile" accept="application/json,.json" hidden></div><div id="gzAdminStatus" role="status"></div></div>`;
+const overlay=document.createElement('div');overlay.id='gzAdminOverlay';overlay.innerHTML=`<div id="gzAdminBox" role="dialog" aria-modal="true" aria-label="GAMEZ admin panel"><button id="gzAdminClose">✕ Close</button><h2>⚙ GAMEZ ADMIN</h2><p>Donut Clicker controls</p><div id="gzAdminLock"><input id="gzAdminCode" type="password" autocomplete="off" placeholder="Enter admin code"><button id="gzAdminUnlock" style="margin-top:9px">🔓 Unlock tools</button></div><div id="gzAdminTools" hidden><div id="gzAdminActions"><button data-gz="million">+1 Million Donuts</button><button data-gz="billion">+1 Billion Donuts</button><button data-gz="trillion">+1 Trillion Donuts</button><button data-gz="buildings">1,000 of Every Building</button><button data-gz="upgrades">Unlock All Upgrades</button><button data-gz="stars">+100 Franchise Stars</button><button data-gz="tokens">+10,000 Chef Tokens</button><button data-gz="kitchen">Unlock Chef Kitchen</button><button data-gz="achievements">Unlock Achievements & Skins</button><button data-gz="backup">Backup Saves</button><button data-gz="restore">Restore Saves</button><button data-gz="lock">Lock Admin</button></div><p>Game-specific controls save automatically.</p><input type="file" id="gzAdminFile" accept="application/json,.json" hidden></div><div id="gzAdminStatus" role="status"></div></div>`;
 document.body.append(overlay);
 let unlocked=false,uiHidden=false;
 const $=s=>overlay.querySelector(s),status=t=>{$('#gzAdminStatus').textContent=t};
 function show(){overlay.classList.add('gzVisible');$('#gzAdminLock').hidden=unlocked;$('#gzAdminTools').hidden=!unlocked;status('');}
 function close(){overlay.classList.remove('gzVisible')}
-open.onclick=show;$('#gzAdminClose').onclick=close;
+$('#gzAdminClose').onclick=close;
 $('#gzAdminUnlock').onclick=()=>{if($('#gzAdminCode').value==='99901'){unlocked=true;$('#gzAdminLock').hidden=true;$('#gzAdminTools').hidden=false;$('#gzAdminCode').value='';status('Admin tools unlocked.')}else status('Incorrect code.')};
 $('#gzAdminCode').onkeydown=e=>{if(e.key==='Enter')$('#gzAdminUnlock').click()};
 document.addEventListener('keydown',e=>{if(e.code==='Backquote'){e.preventDefault();e.stopImmediatePropagation();overlay.classList.contains('gzVisible')?close():show()}else if(e.code==='Escape'&&overlay.classList.contains('gzVisible')){e.stopImmediatePropagation();close()}},true);
@@ -2050,6 +2064,7 @@ function saves(){const result={};try{for(let i=0;i<localStorage.length;i++){cons
 function download(name,blob){const a=document.createElement('a'),url=URL.createObjectURL(blob);a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),3000)}
 $('#gzAdminActions').onclick=async e=>{const b=e.target.closest('button[data-gz]');if(!b||!unlocked)return;const a=b.dataset.gz;
 try{
+if(window.donutAdminAction&&window.donutAdminAction(a)){status('Applied and saved: '+b.textContent);return}
 if(a==='fullscreen'){if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen();status('Fullscreen updated.')}
 if(a==='screenshot'){const c=[...document.querySelectorAll('canvas')].filter(x=>x.width>300&&x.height>200).sort((a,b)=>b.width*b.height-a.width*a.height)[0];if(!c){status('No game canvas available.');return}c.toBlob(blob=>blob?download('gamez-screenshot.png',blob):status('Screenshot unavailable (cross-origin content).'))}
 if(a==='backup'){download('gamez-save-backup.json',new Blob([JSON.stringify({game:location.pathname,date:new Date().toISOString(),saves:saves()},null,2)],{type:'application/json'}));status('Save backup downloaded.')}
