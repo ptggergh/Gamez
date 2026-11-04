@@ -238,8 +238,7 @@ dd{margin:0;font-weight:800;text-align:right}
 </style>
 </head>
 <body class="pat-check">
-<!-- Always-visible Donut Clicker admin launcher: independent of game initialization -->
-<button id="donutDirectAdmin" type="button" onclick="(function(){var panel=document.getElementById('gzAdminOverlay');if(panel){panel.classList.add('gzVisible');panel.style.display='grid';return;}var code=prompt('GAMEZ ADMIN — enter code');if(code!=='99901'){if(code!==null)alert('Incorrect admin code');return;}var choice=prompt('ADMIN TOOLS: type BACKUP, RESET, RESTART, or FULLSCREEN');if(!choice)return;choice=choice.toUpperCase().trim();if(choice==='RESTART')location.reload();else if(choice==='FULLSCREEN')document.documentElement.requestFullscreen();else if(choice==='RESET'&&confirm('Clear all saved game progress?')){localStorage.clear();location.reload()}else if(choice==='BACKUP'){var d={};for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);d[k]=localStorage.getItem(k)}var blob=new Blob([JSON.stringify(d,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='donut-clicker-backup.json';a.click();}else alert('Unknown admin command');})()" style="position:fixed!important;right:14px!important;bottom:14px!important;z-index:2147483647!important;display:block!important;visibility:visible!important;opacity:1!important;background:#16394c!important;color:#fff!important;border:2px solid #70f6ed!important;border-radius:14px!important;padding:13px 17px!important;font:800 14px Arial,sans-serif!important;cursor:pointer!important;pointer-events:auto!important">⚙ ADMIN · 99901</button>
+
 
 <main class="app">
   <section class="stage" id="stage">
@@ -2036,9 +2035,9 @@ const css=document.createElement('style');css.textContent=`
 #gzAdminBox input{width:100%;cursor:text}#gzAdminBox button:hover{background:#2d6a80}#gzAdminActions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:14px 0}#gzAdminActions button{min-height:54px}
 #gzAdminBox .gzDanger{border-color:#ff8d86}#gzAdminStatus{min-height:20px;color:#a2f8cf;font-size:12px}#gzAdminClose{float:right}
 `;document.head.appendChild(css);
-const open=document.createElement('button');open.id='gzAdminOpen';open.textContent='⚙ ADMIN';open.title='Open admin tools (`)';
+
 const overlay=document.createElement('div');overlay.id='gzAdminOverlay';overlay.innerHTML=`<div id="gzAdminBox" role="dialog" aria-modal="true" aria-label="GAMEZ admin panel"><button id="gzAdminClose">✕ Close</button><h2>⚙ GAMEZ ADMIN</h2><p>Local game tools · Admin code 99901</p><div id="gzAdminLock"><input id="gzAdminCode" type="password" autocomplete="off" placeholder="Enter admin code"><button id="gzAdminUnlock" style="margin-top:9px">🔓 Unlock tools</button></div><div id="gzAdminTools" hidden><div id="gzAdminActions"><button data-gz="fullscreen">⛶ Fullscreen</button><button data-gz="screenshot">📸 Screenshot</button><button data-gz="backup">💾 Backup saves</button><button data-gz="restore">📂 Restore saves</button><button data-gz="hide">👁 Hide game UI</button><button data-gz="reload">🔄 Restart game</button><button class="gzDanger" data-gz="clear">🗑 Reset saved progress</button><button data-gz="lock">🔒 Lock admin</button></div><p>Backup/restore works with localStorage saves on this game's origin. Restart reloads the game. Reset permanently clears this game's saved data after confirmation.</p><input type="file" id="gzAdminFile" accept="application/json,.json" hidden></div><div id="gzAdminStatus" role="status"></div></div>`;
-document.body.append(open,overlay);
+document.body.append(overlay);
 let unlocked=false,uiHidden=false;
 const $=s=>overlay.querySelector(s),status=t=>{$('#gzAdminStatus').textContent=t};
 function show(){overlay.classList.add('gzVisible');$('#gzAdminLock').hidden=unlocked;$('#gzAdminTools').hidden=!unlocked;status('');}
