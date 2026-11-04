@@ -120,4 +120,4 @@ if(dist<2.1){end(false);renderer.render(scene,camera);return}if(dist>100&&clock%
 const fear=Math.max(0,1-dist/23);$('fear').style.opacity=String(fear*.23);if(dist<26&&clock-heartbeat>.7+dist*.02){heartbeat=clock;sound(65,.17,'sine',.045)}
 let prompt='';for(const r of radios)if(!r.found&&Math.hypot(pos.x-r.x,pos.z-r.z)<3)prompt='[ E ] PICK UP RADIO TRANSMITTER';if(collected===6&&Math.hypot(pos.x-56,pos.z+43)<9)prompt='[ E ] ENTER RANGER STATION';$('prompt').textContent=prompt;
 }renderer.render(scene,camera)}requestAnimationFrame(tick);addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)})})();
-</script></body></html>
+</script><script src="../admin-panel.js"></script></body></html>
