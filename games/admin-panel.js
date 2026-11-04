@@ -10,7 +10,7 @@ const css=document.createElement('style');css.textContent=`
 #gzAdminBox input{width:100%;cursor:text}#gzAdminBox button:hover{background:#2d6a80}#gzAdminActions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:14px 0}#gzAdminActions button{min-height:54px}
 #gzAdminBox .gzDanger{border-color:#ff8d86}#gzAdminStatus{min-height:20px;color:#a2f8cf;font-size:12px}#gzAdminClose{float:right}
 `;document.head.appendChild(css);
-const open=document.createElement('button');open.id='gzAdminOpen';open.textContent='⚙ ADMIN';open.title='Open admin tools (F2)';
+const open=document.createElement('button');open.id='gzAdminOpen';open.textContent='⚙ ADMIN';open.title='Open admin tools (`)';
 const overlay=document.createElement('div');overlay.id='gzAdminOverlay';overlay.innerHTML=`<div id="gzAdminBox" role="dialog" aria-modal="true" aria-label="GAMEZ admin panel"><button id="gzAdminClose">✕ Close</button><h2>⚙ GAMEZ ADMIN</h2><p>Local game tools · Admin code 99901</p><div id="gzAdminLock"><input id="gzAdminCode" type="password" autocomplete="off" placeholder="Enter admin code"><button id="gzAdminUnlock" style="margin-top:9px">🔓 Unlock tools</button></div><div id="gzAdminTools" hidden><div id="gzAdminActions"><button data-gz="fullscreen">⛶ Fullscreen</button><button data-gz="screenshot">📸 Screenshot</button><button data-gz="backup">💾 Backup saves</button><button data-gz="restore">📂 Restore saves</button><button data-gz="hide">👁 Hide game UI</button><button data-gz="reload">🔄 Restart game</button><button class="gzDanger" data-gz="clear">🗑 Reset saved progress</button><button data-gz="lock">🔒 Lock admin</button></div><p>Backup/restore works with localStorage saves on this game's origin. Restart reloads the game. Reset permanently clears this game's saved data after confirmation.</p><input type="file" id="gzAdminFile" accept="application/json,.json" hidden></div><div id="gzAdminStatus" role="status"></div></div>`;
 document.body.append(open,overlay);
 let unlocked=false,uiHidden=false;
@@ -20,7 +20,7 @@ function close(){overlay.classList.remove('gzVisible')}
 open.onclick=show;$('#gzAdminClose').onclick=close;
 $('#gzAdminUnlock').onclick=()=>{if($('#gzAdminCode').value==='99901'){unlocked=true;$('#gzAdminLock').hidden=true;$('#gzAdminTools').hidden=false;$('#gzAdminCode').value='';status('Admin tools unlocked.')}else status('Incorrect code.')};
 $('#gzAdminCode').onkeydown=e=>{if(e.key==='Enter')$('#gzAdminUnlock').click()};
-document.addEventListener('keydown',e=>{if(e.code==='F2'){e.preventDefault();e.stopImmediatePropagation();overlay.classList.contains('gzVisible')?close():show()}else if(e.code==='Escape'&&overlay.classList.contains('gzVisible')){e.stopImmediatePropagation();close()}},true);
+document.addEventListener('keydown',e=>{if(e.code==='Backquote'){e.preventDefault();e.stopImmediatePropagation();overlay.classList.contains('gzVisible')?close():show()}else if(e.code==='Escape'&&overlay.classList.contains('gzVisible')){e.stopImmediatePropagation();close()}},true);
 function saves(){const result={};try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);result[k]=localStorage.getItem(k)}}catch{}return result}
 function download(name,blob){const a=document.createElement('a'),url=URL.createObjectURL(blob);a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),3000)}
 $('#gzAdminActions').onclick=async e=>{const b=e.target.closest('button[data-gz]');if(!b||!unlocked)return;const a=b.dataset.gz;
