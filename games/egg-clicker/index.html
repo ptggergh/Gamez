@@ -32,7 +32,7 @@ const cost=(b,n)=>{let count=S.buildings[b[0]]||0,price=0;for(let i=0;i<n;i++)pr
 function save(){try{S.updated=Date.now();localStorage.setItem(KEY,JSON.stringify(S))}catch{}}
 function toast(t){const el=$('toast');el.textContent=t;el.classList.remove('hidden');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.add('hidden'),2200)}
 function earn(n){if(!Number.isFinite(n)||n<=0)return;S.eggs+=n;S.run+=n;S.lifetime+=n}
-function burst(x,y,amount){const zone=$('eggzone'),rect=zone.getBoundingClientRect();const f=document.createElement('div');f.className='float';f.textContent='+'+fmt(amount);f.style.left=(x-rect.left-20)+'px';f.style.top=(y-rect.top-25)+'px';zone.append(f);setTimeout(()=>f.remove(),950);for(let i=0;i<9;i++){const p=document.createElement('i');p.className='particle';p.style.left=(x-rect.left)+'px';p.style.top=(y-rect.top)+'px';const angle=Math.random()*Math.PI*2,dist=35+Math.random()*85;p.style.setProperty('--dx',Math.cos(angle)*dist+'px');p.style.setProperty('--dy',Math.sin(angle)*dist+'px');p.style.background=['#ffe19a','#fff','#89d9ce','#f8b7a4'][i%4];zone.append(p);setTimeout(()=>p.remove(),700)}}
+function burst(x,y,amount){const zone=$('eggzone'),rect=zone.getBoundingClientRect();const f=document.createElement('div');f.className='float';f.textContent=typeof amount==='string'?amount:'+'+fmt(amount);f.style.left=(x-rect.left-20)+'px';f.style.top=(y-rect.top-25)+'px';zone.append(f);setTimeout(()=>f.remove(),950);for(let i=0;i<9;i++){const p=document.createElement('i');p.className='particle';p.style.left=(x-rect.left)+'px';p.style.top=(y-rect.top)+'px';const angle=Math.random()*Math.PI*2,dist=35+Math.random()*85;p.style.setProperty('--dx',Math.cos(angle)*dist+'px');p.style.setProperty('--dy',Math.sin(angle)*dist+'px');p.style.background=['#ffe19a','#fff','#89d9ce','#f8b7a4'][i%4];zone.append(p);setTimeout(()=>p.remove(),700)}}
 const crackPaths=['M90 42 L76 67 L92 84 L73 106','M92 84 L111 99 L101 122 L121 144','M73 106 L51 122 L64 147 L45 164','M101 122 L84 146 L95 174 L76 199','M121 144 L140 161 L129 187','M64 147 L78 164 L60 185'];
 function renderCracks(){
  const broken=Math.max(0,7-S.shellHp),count=Math.min(crackPaths.length,Math.ceil(broken*crackPaths.length/7));
@@ -41,6 +41,7 @@ function renderCracks(){
  $('damage').textContent=damage();
 }
 function crackAt(x,y){
+ if($('egg').classList.contains('shatter'))return;
  S.shellHp=Math.max(0,S.shellHp-damage());
  const egg=$('egg');egg.classList.remove('punch');void egg.offsetWidth;egg.classList.add('punch');
  renderCracks();burst(x,y,S.shellHp<=0?clickValue():'CRACK!');
