@@ -238,6 +238,9 @@ dd{margin:0;font-weight:800;text-align:right}
 </style>
 </head>
 <body class="pat-check">
+<!-- Always-visible Donut Clicker admin launcher: independent of game initialization -->
+<button id="donutDirectAdmin" type="button" onclick="(function(){var panel=document.getElementById('gzAdminOverlay');if(panel){panel.classList.add('gzVisible');panel.style.display='grid';return;}var code=prompt('GAMEZ ADMIN — enter code');if(code!=='99901'){if(code!==null)alert('Incorrect admin code');return;}var choice=prompt('ADMIN TOOLS: type BACKUP, RESET, RESTART, or FULLSCREEN');if(!choice)return;choice=choice.toUpperCase().trim();if(choice==='RESTART')location.reload();else if(choice==='FULLSCREEN')document.documentElement.requestFullscreen();else if(choice==='RESET'&&confirm('Clear all saved game progress?')){localStorage.clear();location.reload()}else if(choice==='BACKUP'){var d={};for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);d[k]=localStorage.getItem(k)}var blob=new Blob([JSON.stringify(d,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='donut-clicker-backup.json';a.click();}else alert('Unknown admin command');})()" style="position:fixed!important;right:14px!important;bottom:14px!important;z-index:2147483647!important;display:block!important;visibility:visible!important;opacity:1!important;background:#16394c!important;color:#fff!important;border:2px solid #70f6ed!important;border-radius:14px!important;padding:13px 17px!important;font:800 14px Arial,sans-serif!important;cursor:pointer!important;pointer-events:auto!important">⚙ ADMIN · 99901</button>
+
 <main class="app">
   <section class="stage" id="stage">
     <canvas id="rain" aria-hidden="true"></canvas>
