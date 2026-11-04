@@ -779,4 +779,4 @@ for(let i=explosions.length-1;i>=0;i--){
 }
 hitFlash=Math.max(0,hitFlash-dt*3);$('hit').style.opacity=hitFlash;if(elapsed>noticeUntil)$('notice').style.opacity=0;$('stance').textContent=sliding?'SLIDING':player.ads?'AIMING':crouch?'CROUCHED':sprint?'SPRINTING':'STANDING';const seconds=Math.max(0,300-Math.floor(elapsed)%300);$('timer').textContent=String(Math.floor(seconds/60)).padStart(2,'0')+':'+String(seconds%60).padStart(2,'0');}
 renderer.render(scene,camera)}requestAnimationFrame(tick);window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});window.frontlineReady=true;window.dispatchEvent(new Event('frontlineready'));
-</script></body></html>
+</script><script src="../admin-panel.js"></script></body></html>
