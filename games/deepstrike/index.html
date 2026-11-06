@@ -20,7 +20,7 @@ function save(){try{localStorage.setItem(SAVE,JSON.stringify(S))}catch{}}
 const fmt=n=>Math.floor(n).toLocaleString('en-US'),count=()=>Object.values(S.bag).reduce((a,b)=>a+b,0),bonus=()=>S.equipped<0?1:1+(PETS[S.pets[S.equipped]]?.mult||0);
 let toastTimer;function toast(t){$('toast').textContent=t;$('toast').classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').classList.remove('show'),2200)}
 let renderer;try{renderer=new THREE.WebGLRenderer({antialias:false,powerPreference:'default',failIfMajorPerformanceCaveat:false});}catch(err){document.getElementById('intro').classList.remove('hidden');document.querySelector('#intro .intro p').textContent='3D graphics could not start: '+err.message;return;}renderer.setPixelRatio(Math.min(devicePixelRatio,1.8));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=false;renderer.setClearColor(0x527e95,1);renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.NoToneMapping;$('scene').append(renderer.domElement);
-const scene=new THREE.Scene();scene.background=new THREE.Color(0x263b48);scene.fog=new THREE.FogExp2(0x22303a,.009);
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x263b48);scene.fog=new THREE.FogExp2(0x22303a,.004);
 const camera=new THREE.PerspectiveCamera(75,innerWidth/innerHeight,.08,180);camera.rotation.order='YXZ';camera.position.set(0,1.7,8);
 scene.add(new THREE.HemisphereLight(0xd8e9ff,0x777064,3.1));const sun=new THREE.DirectionalLight(0xffd9a2,2.5);sun.position.set(-12,22,14);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);scene.add(sun);
 const mat=(c,metal=0,rough=.82)=>new THREE.MeshStandardMaterial({color:c,metalness:metal,roughness:rough});
@@ -28,7 +28,7 @@ const rock=mat(0x514a45),wood=mat(0x5e402a),metal=mat(0x7b92a0,.7,.35),gold=mat(
 function cube(w,h,d,m,x,y,z,parent=scene){const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);o.position.set(x,y,z);o.castShadow=true;o.receiveShadow=true;parent.add(o);return o}
 function sphere(r,m,x,y,z,parent=scene){const o=new THREE.Mesh(new THREE.IcosahedronGeometry(r,1),m);o.position.set(x,y,z);o.castShadow=true;parent.add(o);return o}
 function textSprite(label,scale=1){const c=document.createElement('canvas');c.width=512;c.height=128;const g=c.getContext('2d');g.fillStyle='#071a2adf';g.fillRect(0,0,512,128);g.fillStyle='#e7f8ff';g.font='bold 52px Inter,Arial';g.textAlign='center';g.fillText(label,256,79);const tex=new THREE.CanvasTexture(c);const o=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthTest:false}));o.scale.set(5*scale,1.25*scale,1);return o}
-const ground=cube(180,1,180,new THREE.MeshBasicMaterial({color:0x6b8d79}),0,-.55,0);ground.receiveShadow=true;
+const ground=cube(180,1,180,new THREE.MeshBasicMaterial({color:0x6b8d79,side:THREE.DoubleSide}),0,-.55,0);ground.receiveShadow=true;
 let blocks=[],props=[],portals=[],colliders=[];
 function clearWorld(){for(const o of [...blocks.map(x=>x.mesh),...props,...portals.map(x=>x.mesh)]){scene.remove(o);o.traverse?.(v=>{if(v.geometry)v.geometry.dispose()})}blocks=[];props=[];portals=[];colliders=[]}
 function prop(o){props.push(o);return o}
@@ -46,7 +46,7 @@ portal(0,10,'RETURN TO OUTPOST',0x6fb2d3);
 camera.position.set(0,1.7,1);yaw=0;pitch=0;updateHud();}
 let inMine=false;
 function goMine(i){S.mine=i;inMine=true;generateMine();save();closeMenu();toast('Entered '+MINES[i].name)}
-function goOutpost(){clearWorld();createOutpost();inMine=false;ground.material.color.setHex(0x6a776a);scene.fog.color.setHex(0x22303a);scene.background.setHex(0x263b48);camera.position.set(0,1.7,12);yaw=0;pitch=-.06;camera.rotation.y=yaw;camera.rotation.x=pitch;save();closeMenu();toast('Welcome back to the outpost')}
+function goOutpost(){clearWorld();createOutpost();inMine=false;ground.material.color.setHex(0x6a776a);scene.fog.color.setHex(0x22303a);scene.background.setHex(0x263b48);camera.position.set(0,1.7,-1);yaw=Math.PI;pitch=-.12;camera.rotation.y=yaw;camera.rotation.x=pitch;save();closeMenu();toast('Welcome back to the outpost')}
 const hand=new THREE.Group();camera.add(hand);scene.add(camera);
 const sleeve=mat(0x2c5366),skin=mat(0xd8a581),pickMat=mat(PICKS[S.pick][3],.75,.28);
 cube(.29,.34,.7,sleeve,.53,-.55,-.65,hand).rotation.x=-.4;cube(.25,.23,.35,skin,.5,-.43,-1,hand);const shaft=cube(.11,1.35,.11,wood,.48,-.15,-1.22,hand);shaft.rotation.z=-.35;const head=cube(.9,.17,.22,pickMat,.7,.38,-1.22,hand);head.rotation.z=-.4;const tip=cube(.18,.32,.22,pickMat,1.14,.27,-1.22,hand);tip.rotation.z=-.65;
