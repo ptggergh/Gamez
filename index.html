@@ -56,7 +56,7 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;back
 /* Ultra-rare secret game discovery */
 #secretDyno{position:fixed;bottom:13px;left:14px;z-index:120;min-width:33px;min-height:33px;border:1px solid #ad91fa30;border-radius:12px;background:#16122c7a;color:#bca4faad;font-size:16px;display:grid;place-items:center;backdrop-filter:blur(8px)}
 #secretDyno:hover{transform:scale(1.1) rotate(0)!important;background:#32234d;color:#fff;box-shadow:0 0 20px #a68aff66}
-#dynoNotice{position:absolute;right:-7px;top:-7px;min-width:18px;height:18px;border-radius:20px;background:#f04458;color:#fff;border:2px solid #12101f;font:800 10px/14px Inter,system-ui;text-align:center;box-shadow:0 0 13px #f0445888}
+#dynoNotice[hidden]{display:none!important}#dynoNotice{position:absolute;right:-7px;top:-7px;min-width:18px;height:18px;border-radius:20px;background:#f04458;color:#fff;border:2px solid #12101f;font:800 10px/14px Inter,system-ui;text-align:center;box-shadow:0 0 13px #f0445888}
 #secretTease{position:fixed;bottom:76px;left:19px;z-index:110;max-width:min(340px,calc(100vw - 36px));padding:19px 22px 19px 20px;border:1px solid #ae8dff9e;border-radius:18px;background:linear-gradient(130deg,#211b3af5,#112637f5);box-shadow:0 20px 65px #000a,0 0 32px #956bff3b;backdrop-filter:blur(18px);pointer-events:none;opacity:0;transform:translateY(24px) scale(.94);transition:opacity .65s cubic-bezier(.2,.7,.2,1),transform .65s cubic-bezier(.2,.7,.2,1)}
 #secretTease.show{opacity:1;transform:translateY(0) scale(1)}
 #secretTease .secretEyebrow{font-size:10px;letter-spacing:2.6px;font-weight:800;color:#8ff4e8;margin-bottom:9px}
@@ -288,7 +288,7 @@ const clear=()=>{tip.classList.remove('show');tip.setAttribute('aria-hidden','tr
 btn.addEventListener('click',()=>{clear();badge.hidden=true;try{localStorage.setItem(discoveredKey,'1')}catch{}});
 if(discovered||seen||Math.random()>=1/125)return;
 try{localStorage.setItem(seenKey,'1')}catch{}
-setTimeout(()=>{if(document.hidden||!document.body.contains(btn))return;tip.setAttribute('aria-hidden','false');tip.classList.add('show');setTimeout(()=>{clear();badge.hidden=false;badge.style.display='block'},6200)},12000);
+setTimeout(()=>{if(document.hidden||!document.body.contains(btn))return;tip.setAttribute('aria-hidden','false');tip.classList.add('show');setTimeout(()=>{clear();badge.hidden=false},6200)},12000);
 })();
 
 // Hidden, self-contained dyno skill game. No external assets or libraries.
