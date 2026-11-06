@@ -280,15 +280,16 @@ const colors=['#7cf5e8','#ae84ff','#ff7fcb'];for(let i=0;i<24;i++){const p=docum
 document.addEventListener('pointermove',e=>{const card=e.target.closest?.('.game');if(!card||matchMedia('(prefers-reduced-motion: reduce)').matches)return;const r=card.getBoundingClientRect();card.style.setProperty('--tilt-x',(((e.clientX-r.left)/r.width-.5)*6).toFixed(2)+'deg');card.style.setProperty('--tilt-y',(((e.clientY-r.top)/r.height-.5)*-6).toFixed(2)+'deg')},{passive:true});
 document.addEventListener('pointerout',e=>{const card=e.target.closest?.('.game');if(card&&!card.contains(e.relatedTarget)){card.style.removeProperty('--tilt-x');card.style.removeProperty('--tilt-y')}},{passive:true});
 
-// Rare, non-blocking secret-game teaser: ~1 in 125 fresh visits, never repeats once discovered.
+// Rare discovery plus manual backslash-key preview.
 (()=>{const btn=document.getElementById('secretDyno'),badge=document.getElementById('dynoNotice'),tip=document.getElementById('secretTease');if(!btn||!badge||!tip)return;
 const discoveredKey='gamez-dyno-discovered-v1',seenKey='gamez-dyno-tease-seen-v1';
-let discovered=false,seen=false;try{discovered=localStorage.getItem(discoveredKey)==='1';seen=localStorage.getItem(seenKey)==='1'}catch{}
+let discovered=false,seen=false,hideTimer=0,showTimer=0;
+try{discovered=localStorage.getItem(discoveredKey)==='1';seen=localStorage.getItem(seenKey)==='1'}catch{}
 const clear=()=>{tip.classList.remove('show');tip.setAttribute('aria-hidden','true')};
-btn.addEventListener('click',()=>{clear();badge.hidden=true;try{localStorage.setItem(discoveredKey,'1')}catch{}});
-if(discovered||seen||Math.random()>=1/125)return;
-try{localStorage.setItem(seenKey,'1')}catch{}
-setTimeout(()=>{if(document.hidden||!document.body.contains(btn))return;tip.setAttribute('aria-hidden','false');tip.classList.add('show');setTimeout(()=>{clear();badge.hidden=false},6200)},12000);
+const reveal=()=>{clearTimeout(hideTimer);clearTimeout(showTimer);badge.hidden=true;tip.setAttribute('aria-hidden','false');tip.classList.add('show');hideTimer=setTimeout(()=>{clear();badge.hidden=false},6200)};
+btn.addEventListener('click',()=>{clearTimeout(hideTimer);clear();badge.hidden=true;try{localStorage.setItem(discoveredKey,'1')}catch{}});
+document.addEventListener('keydown',e=>{if(e.code!=='Backslash'||e.repeat||e.altKey||e.ctrlKey||e.metaKey||e.target.closest('input,textarea,[contenteditable="true"]'))return;e.preventDefault();reveal()});
+if(!discovered&&!seen&&Math.random()<1/125){try{localStorage.setItem(seenKey,'1')}catch{}showTimer=setTimeout(()=>{if(!document.hidden&&document.body.contains(btn))reveal()},12000)}
 })();
 
 // Hidden, self-contained dyno skill game. No external assets or libraries.
