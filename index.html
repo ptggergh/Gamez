@@ -37,6 +37,21 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;back
 @keyframes particleRise{0%{transform:translate3d(0,105vh,0);opacity:0}10%{opacity:.65}85%{opacity:.35}100%{transform:translate3d(var(--drift),-12vh,0);opacity:0}}
 @media(max-width:780px){.hero{border-radius:20px}.game:hover{transform:translateY(-4px)!important}}
 @media(prefers-reduced-motion:reduce){.hero:before,.hero h1,.hero h1 em,.hero .eyebrow,.hero p,.hero .actions,.orb,.arcadeParticle,.btn.primary{animation:none!important}.game{will-change:auto}.game:hover{transform:none!important}}
+
+/* Refined editorial hero: typography lives inside the layout instead of colliding with artwork. */
+.hero{padding:clamp(38px,5.5vw,74px) clamp(24px,5.3vw,72px) clamp(38px,5vw,64px)!important;min-height:440px;display:flex;flex-direction:column;justify-content:center}
+.hero .eyebrow,.hero h1,.hero p,.hero .actions{position:relative;z-index:2}
+.hero h1{font-size:clamp(43px,5.25vw,78px)!important;letter-spacing:clamp(-3.5px,-.23vw,-1.2px)!important;line-height:1.07!important;max-width:min(760px,73%)!important;margin:23px 0 20px!important;text-wrap:balance}
+.hero h1 em{display:inline-block;max-width:100%;white-space:nowrap;letter-spacing:inherit}
+.hero p{max-width:min(560px,65%);font-size:clamp(14px,1.3vw,17px)}
+.orb{right:5%!important;top:50%!important;width:clamp(180px,25vw,315px)!important;height:clamp(180px,25vw,315px)!important;transform:translateY(-50%);animation:orbBreath 7s ease-in-out infinite!important;z-index:0!important;opacity:.75}
+@keyframes orbBreath{0%,100%{transform:translateY(-50%) rotate(-5deg)}50%{transform:translateY(calc(-50% - 14px)) rotate(6deg)}}
+.cursor-dot{width:6px!important;height:6px!important;background:#eaffff!important;box-shadow:0 0 0 3px #59f7e938,0 0 13px #83ffff,0 0 22px #ab85ff!important}
+.cursor-ring{width:35px!important;height:35px!important;border:1.5px solid #87eaff!important;background:radial-gradient(circle,#70eaff0d,transparent 70%)!important;box-shadow:0 0 14px #7ef7f65c,inset 0 0 12px #a67fff3c!important;will-change:left,top;transition:width .18s,height .18s,background .18s,border-color .18s!important}
+.cursor-ring.hover{width:49px!important;height:49px!important;border-color:#ffc0ed!important;background:#ffb9ec14!important}
+@media(max-width:900px){.hero h1{font-size:clamp(40px,6vw,66px)!important;max-width:76%!important}.orb{right:-2%!important;opacity:.55}}
+@media(max-width:650px){.hero{min-height:390px;padding:42px 24px!important}.hero h1{font-size:clamp(37px,8.4vw,58px)!important;max-width:100%!important;letter-spacing:-2px!important}.hero h1 em{white-space:normal}.hero p{max-width:100%}.orb{right:-85px!important;top:30%!important;opacity:.25}.hero .actions{margin-top:20px}}
+@media(prefers-reduced-motion:reduce){.orb{animation:none!important}}
 </style></head><body><div id="arcadeParticles" aria-hidden="true"></div><button id="secretDyno" title="?" aria-label="Open hidden dyno challenge">✦</button><div id="dynoModal" hidden><div class="dynoBox"><button id="dynoClose" aria-label="Close dyno">✕</button><div class="tagline">SECRET ARCADE // DYNO</div><h2>⚡ DYNO DASH</h2><p>Tap the throttle to build horsepower. Keep the needle inside the green band to score!</p><canvas id="dynoCanvas" width="600" height="260"></canvas><div class="dynoStats"><span>HP <b id="dynoHp">0</b></span><span>SCORE <b id="dynoScore">0</b></span><span>BEST <b id="dynoBest">0</b></span></div><button id="dynoThrottle">HOLD TO REV / SPACE</button><p class="dynoHint">Release before the redline. You have 30 seconds.</p><button id="dynoStart">START RUN</button></div></div><div class="cursor-dot" id="dot"></div><div class="cursor-ring" id="ring"></div><header><a class="logo" href="./">GAME<span>Z</span><span style="font-size:11px;letter-spacing:1px;vertical-align:top;margin-left:5px;color:#b3a9df">ARCADE</span></a><nav class="nav"><a href="#games">Games</a><a href="#about">About</a></nav><div class="tag">✦ INDIE BROWSER GAMES</div></header><main class="wrap"><section class="hero"><div class="orb" aria-hidden="true"></div><div class="eyebrow"><i class="pulse"></i> WELCOME TO THE ARCADE</div><h1>GOOD GAMES.<br><em>ZERO DOWNLOADS.</em></h1><p>A whole arcade of different worlds. Endless ways to waste an afternoon. Pick a game, press play, and see where it takes you.</p><div class="actions"><a class="btn primary" href="#games">Explore games ↗</a><a class="btn" href="#about">What's Gamez?</a></div></section><section id="games"><div class="section-head"><div><h2>Choose your game <span style="color:#bd8cff">✦</span></h2><p>Made for the browser. Built to keep getting better.</p></div><div class="tools"><div class="view-settings" role="group" aria-label="Game card size"><button type="button" data-view="compact" aria-label="Small game icons">▦ Small</button><button type="button" data-view="medium" aria-label="Medium game cards">▤ Medium</button><button type="button" data-view="large" aria-label="Large game cards">▣ Large</button></div><input class="search" id="search" type="search" placeholder="⌕  Search games..." aria-label="Search games"></div></div><div class="filters" id="filters"><button class="filter active" data-filter="all">All games</button><button class="filter" data-filter="simulation">Simulation</button><button class="filter" data-filter="survival">Survival</button><button class="filter" data-filter="strategy">Strategy</button></div><div class="grid" id="grid"></div><div class="empty" id="empty">No games match that search. Try something else.</div></section><section id="about" style="padding:5px 0 75px"><div style="border:1px solid #ffffff25;border-radius:22px;padding:30px;background:linear-gradient(120deg,#6d4fc122,#18748718)"><h2 style="margin:0 0 8px;font-size:27px">Small games. Big ideas.</h2><p style="color:#c4c2da;max-width:690px;line-height:1.8;margin:0">GAMEZ is a growing collection of free browser games. Every game opens in its own page, so your controls stay normal and the homepage's custom cursor won't interfere with gameplay. More games and improvements are on the way.</p></div></section></main><footer><div class="foot"><span>© <span id="year"></span> GAMEZ · Made for fun.</span><span>No downloads. Just play.</span></div></footer><script>
 'use strict';
 // Update paths here if you move the game folders in GitHub.
@@ -182,19 +197,29 @@ c.textAlign='left';c.fillStyle='#fff';c.font='900 25px system-ui';c.fillText(sub
 }
 
 render();
-// Stable homepage cursor: no chasing animation, pulsing ball, or cursor drift.
+// Precise center dot plus a gently trailing ring; settles completely when the pointer stops.
 if(matchMedia('(pointer:fine)').matches){
  const dot=document.getElementById('dot'),ring=document.getElementById('ring');
  if(dot&&ring){
+  let x=0,y=0,rx=0,ry=0,ready=false,raf=0;
   document.body.classList.add('cursor-on');
+  const tick=()=>{
+   rx+=(x-rx)*.22;ry+=(y-ry)*.22;
+   if(Math.abs(x-rx)<.12)rx=x;
+   if(Math.abs(y-ry)<.12)ry=y;
+   ring.style.left=rx+'px';ring.style.top=ry+'px';
+   if(rx!==x||ry!==y)raf=requestAnimationFrame(tick);else raf=0;
+  };
   document.addEventListener('pointermove',e=>{
-   const x=e.clientX,y=e.clientY;
+   x=e.clientX;y=e.clientY;
+   if(!ready){rx=x;ry=y;ready=true}
    dot.style.opacity=ring.style.opacity='1';
    dot.style.left=x+'px';dot.style.top=y+'px';
-   ring.style.left=x+'px';ring.style.top=y+'px';
-   ring.classList.toggle('hover',!!e.target.closest('a,button,input,select,[role="button"]'));
+   ring.classList.toggle('hover',!!e.target.closest('a,button,input,select,textarea,[role="button"]'));
+   if(!raf)raf=requestAnimationFrame(tick);
   },{passive:true});
-  document.addEventListener('pointerleave',()=>{dot.style.opacity=ring.style.opacity='0'});
+  document.addEventListener('pointerleave',e=>{if(e.relatedTarget===null){dot.style.opacity=ring.style.opacity='0';ready=false;if(raf)cancelAnimationFrame(raf);raf=0}});
+  document.addEventListener('visibilitychange',()=>{if(document.hidden){dot.style.opacity=ring.style.opacity='0';ready=false;if(raf)cancelAnimationFrame(raf);raf=0}});
  }
 }
 
