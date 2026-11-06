@@ -1211,6 +1211,17 @@ function start(data){
   if (!running){ running = true; requestAnimationFrame(frame); }
   if (document.fonts && document.fonts.load) document.fonts.load('20px "Lilita One"').catch(()=>{});
 }
+window.tinyFishingAdmin = function(action, amount){
+  const n=Math.max(0,Math.min(1e15,Number(amount)||0));
+  if(action==='cash') S.money=Math.min(1e15,S.money+n);
+  else if(action==='maxup') for(const k of Object.keys(S.lv)) S.lv[k]=Math.max(S.lv[k],Math.min(40,Math.floor(n)||20));
+  else if(action==='unlock') {for(const sp of SPECIES) S.found[sp.id]=true;S.dexNew=true;}
+  else if(action==='tank') {S.slots=MAX_SLOTS;}
+  else if(action==='casts') S.casts+=Math.floor(n)||100;
+  else if(action==='resetup') for(const k of Object.keys(S.lv)) S.lv[k]=0;
+  else return false;
+  save();refreshUI();return true;
+};
 window.__tinyFishing = {
   get state(){ return state; }, get S(){ return S; },
   get flyers(){ return flyers.map(f => [f.x, f.y]); },
@@ -1223,4 +1234,20 @@ window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude
 })();
 
 </script>
-<script src="../admin-panel.js?v=admin-hide-code-2"></script>
+<script>
+(()=>{'use strict';
+const style=document.createElement('style');style.textContent='#tfAdminBtn{position:fixed;bottom:12px;right:12px;z-index:999990;background:#102e43;color:#baffee;border:1px solid #58c6ba;border-radius:10px;padding:8px 12px;cursor:pointer;font:700 12px system-ui}#tfAdminShade{position:fixed;inset:0;z-index:999999;background:#03101be9;display:none;align-items:center;justify-content:center;font:14px system-ui;color:#e8fbff}#tfAdminBox{background:#10283b;border:1px solid #48bdba;border-radius:18px;padding:24px;width:min(92vw,480px);max-height:85vh;overflow:auto;box-shadow:0 18px 65px #000a}#tfAdminBox h2{margin:0 0 12px}#tfAdminBox input,#tfAdminBox button{box-sizing:border-box;padding:11px;border-radius:9px;background:#1a3b50;color:white;border:1px solid #537f92;font:600 13px system-ui}#tfAdminBox input{width:100%}#tfAdminBox button{cursor:pointer}#tfAdminGrid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:14px}#tfAdminBox p{color:#b1cbd3;font-size:12px}';document.head.append(style);
+const overlay=document.createElement('div');overlay.id='tfAdminShade';overlay.innerHTML='<div id="tfAdminBox" role="dialog" aria-modal="true"><button id="tfClose" style="float:right">✕</button><h2>🎣 TINY FISHING ADMIN</h2><div id="tfLogin"><p>Enter your access code.</p><input id="tfPass" type="password" placeholder="Access code" autocomplete="off"><button id="tfUnlock" style="margin-top:10px">Unlock</button></div><div id="tfTools" hidden><p>Developer sandbox controls. Changes save to this browser.</p><input id="tfAmount" type="number" min="0" max="1000000000000000" value="1000000" aria-label="Amount"><div id="tfAdminGrid"><button data-act="cash">💰 Add money</button><button data-act="maxup">⚡ Upgrade levels</button><button data-act="unlock">🐟 Unlock fish index</button><button data-act="tank">🏠 Max tank slots</button><button data-act="casts">🎣 Add casts</button><button data-act="resetup">↩ Reset upgrades</button><button data-act="backup">💾 Backup save</button><button data-act="lock">🔒 Lock</button></div></div><p id="tfStatus" role="status"></p></div>';document.body.append(overlay);
+const $=id=>document.getElementById(id);let unlocked=false;
+function show(){overlay.style.display='flex';$('tfLogin').hidden=unlocked;$('tfTools').hidden=!unlocked;$('tfStatus').textContent='';}
+function hide(){overlay.style.display='none'}
+$('tfClose').onclick=hide;
+$('tfUnlock').onclick=()=>{if($('tfPass').value==='99901'){unlocked=true;$('tfPass').value='';$('tfLogin').hidden=true;$('tfTools').hidden=false;$('tfStatus').textContent='Admin unlocked.'}else{$('tfPass').value='';$('tfStatus').textContent='Incorrect code.'}};
+$('tfPass').onkeydown=e=>{if(e.key==='Enter')$('tfUnlock').click()};
+$('tfAdminGrid').onclick=e=>{const b=e.target.closest('[data-act]');if(!b||!unlocked)return;const act=b.dataset.act;
+if(act==='lock'){unlocked=false;$('tfTools').hidden=true;$('tfLogin').hidden=false;return}
+if(act==='backup'){const data=localStorage.getItem('tinyFishing.v1');const a=document.createElement('a');const u=URL.createObjectURL(new Blob([data||'{}'],{type:'application/json'}));a.href=u;a.download='tiny-fishing-save.json';a.click();setTimeout(()=>URL.revokeObjectURL(u),1000);$('tfStatus').textContent='Save exported.';return}
+const ok=window.tinyFishingAdmin?.(act,$('tfAmount').value);$('tfStatus').textContent=ok?'Applied and saved.':'Action unavailable.'};
+document.addEventListener('keydown',e=>{if(e.code==='Backquote'&&!e.repeat){e.preventDefault();e.stopImmediatePropagation();overlay.style.display==='flex'?hide():show()}else if(e.code==='Escape'&&overlay.style.display==='flex')hide()},true);
+})();
+</script>
