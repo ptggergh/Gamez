@@ -3220,5 +3220,21 @@ requestAnimationFrame(loop);
 window.__GK = { get G() { return G; }, get R() { return R; }, get S() { return S; }, get mode() { return mode; } };
 
 </script>
-<script src="../admin-panel.js"></script></body>
+<script>
+(()=>{const KEY="garageKings.save.v1",game="GARAGE KINGS";
+const css=document.createElement('style');css.textContent='.gameAdminModal{position:fixed;inset:0;z-index:2147483640;background:#020b16e8;display:none;align-items:center;justify-content:center;font:14px system-ui;color:#eff}.gameAdminCard{width:min(92vw,460px);max-height:85vh;overflow:auto;padding:24px;border:1px solid #65d7ce;border-radius:18px;background:#11293c;box-shadow:0 15px 60px #000a}.gameAdminCard input,.gameAdminCard button{box-sizing:border-box;padding:12px;border:1px solid #56889b;background:#214258;color:white;border-radius:9px;font:600 13px system-ui;cursor:pointer}.gameAdminCard input{width:100%}.gameAdminActions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}.gameAdminCard p{color:#b9d2dc;font-size:12px}';document.head.append(css);
+const wrap=document.createElement('div');wrap.className='gameAdminModal';wrap.innerHTML='<div class="gameAdminCard"><button id="localAdminClose" style="float:right">✕</button><h2>⚙ '+game+' ADMIN</h2><div id="localAdminLogin"><p>Enter access code.</p><input id="localAdminPass" type="password" autocomplete="off"><button id="localAdminUnlock">Unlock</button></div><div id="localAdminTools" hidden><p>Changes affect your local save. Restart the game after applying.</p><input id="localAdminValue" type="number" min="0" max="1000000000000" value="1000000"><div class="gameAdminActions"><button data-admin="primary">Add money</button><button data-admin="secondary">Add rep</button><button data-admin="backup">Export save</button><button data-admin="reload">Reload game</button><button data-admin="lock">Lock</button></div></div><p id="localAdminStatus"></p></div>';document.body.append(wrap);
+const $=id=>wrap.querySelector('#'+id);let unlocked=false;const show=()=>{wrap.style.display='flex';$('localAdminLogin').hidden=unlocked;$('localAdminTools').hidden=!unlocked},hide=()=>wrap.style.display='none';
+$('localAdminClose').onclick=hide;$('localAdminUnlock').onclick=()=>{if($('localAdminPass').value==='99901'){unlocked=true;$('localAdminLogin').hidden=true;$('localAdminTools').hidden=false;$('localAdminStatus').textContent='Unlocked'}else $('localAdminStatus').textContent='Incorrect code';$('localAdminPass').value=''};$('localAdminPass').onkeydown=e=>{if(e.key==='Enter')$('localAdminUnlock').click()};
+wrap.querySelector('.gameAdminActions').onclick=e=>{const action=e.target.closest('button')?.dataset.admin;if(!action||!unlocked)return;
+if(action==='lock'){unlocked=false;$('localAdminTools').hidden=true;$('localAdminLogin').hidden=false;return}
+if(action==='reload'){location.reload();return}
+let raw=localStorage.getItem(KEY);if(!raw){$('localAdminStatus').textContent='No saved game yet. Start playing and save first.';return}
+if(action==='backup'){const url=URL.createObjectURL(new Blob([raw],{type:'application/json'})),link=document.createElement('a');link.href=url;link.download=game.toLowerCase().replace(/ /g,'-')+'-save.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),1500);$('localAdminStatus').textContent='Save exported';return}
+try{const data=JSON.parse(raw),amount=Math.max(0,Math.min(1e12,Number($('localAdminValue').value)||0)),field=action==='primary'?"money":"rep";
+data[field]=(Number(data[field])||0)+amount;
+localStorage.setItem(KEY,JSON.stringify(data));$('localAdminStatus').textContent='Saved. Reload to apply.'}catch(err){$('localAdminStatus').textContent='Could not edit save: '+err.message}};
+document.addEventListener('keydown',e=>{if(e.code==='Backquote'&&!e.repeat){e.preventDefault();e.stopImmediatePropagation();wrap.style.display==='flex'?hide():show()}else if(e.code==='Escape'&&wrap.style.display==='flex')hide()},true);
+})();
+</script></body>
 </html>
