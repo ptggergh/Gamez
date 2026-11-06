@@ -88,7 +88,7 @@ if(action==='reload'){location.reload();return}
 let raw=localStorage.getItem(KEY);if(!raw){$('localAdminStatus').textContent='No saved game yet. Start playing and save first.';return}
 if(action==='backup'){const url=URL.createObjectURL(new Blob([raw],{type:'application/json'})),link=document.createElement('a');link.href=url;link.download=game.toLowerCase().replace(/ /g,'-')+'-save.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),1500);$('localAdminStatus').textContent='Save exported';return}
 try{const data=JSON.parse(raw),amount=Math.max(0,Math.min(1e12,Number($('localAdminValue').value)||0)),field=action==='primary'?"eggs":"tokens";
-data[field]=(Number(data[field])||0)+amount;
+data[field]=(Number(data[field])||0)+amount;if(field==='eggs'){data.run=(Number(data.run)||0)+amount;data.lifetime=(Number(data.lifetime)||0)+amount;}
 localStorage.setItem(KEY,JSON.stringify(data));$('localAdminStatus').textContent='Saved. Reload to apply.'}catch(err){$('localAdminStatus').textContent='Could not edit save: '+err.message}};
 document.addEventListener('keydown',e=>{if(e.code==='Backquote'&&!e.repeat){e.preventDefault();e.stopImmediatePropagation();wrap.style.display==='flex'?hide():show()}else if(e.code==='Escape'&&wrap.style.display==='flex')hide()},true);
 })();
