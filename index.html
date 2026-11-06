@@ -174,7 +174,7 @@ function drawArt(canvas,type){const ctx=canvas.getContext('2d'),w=canvas.width,h
 function premiumArt(canvas,type){
 const c=canvas.getContext('2d'),w=canvas.width,h=canvas.height;
 const themes={
-'starforge':['#211044','#b789ff','✦','COSMIC FORGE'],'blackmarket':['#061b27','#39f0cb','▥','MARKET TERMINAL'],'outbreak':['#11251e','#a5d77e','☣','QUARANTINE'],'streetline':['#201329','#ff668d','🏎','NIGHT RACING'],'abyss':['#052237','#41c8f5','🐟','DEEP OCEAN'],'blockworld':['#203a28','#a4e783','▣','CRAFT & BUILD'],'hollowwood':['#091e1b','#80b9a4','♠','HAUNTED FOREST'],'summit':['#19334a','#c5e8ff','▲','SUMMIT ASCENT'],'bench':['#13373a','#7ff3da','▤','REPAIR STATION'],'frontline':['#14232b','#e2bf91','⌖','TACTICAL RANGE'],'tiny-fishing':['#063657','#54dfff','🐟','DEEP WATER'],'donut-clicker':['#542642','#ffb5cc','🍩','THE BAKERY'],'egg-clicker':['#343349','#ffe19c','🥚','THE HATCHERY'],'horizon-drive':['#1a3850','#ffa36a','🏎','OPEN ROAD'],'bonvo-ride':['#164769','#e7f5ff','▲','ALPINE SLOPES'],'garage-kings':['#29303a','#f9b476','🔧','CUSTOM GARAGE'],'yolk-brawl':['#483079','#ffdc8e','🥚','ARENA BRAWL'],'nitro-quarry':['#2d3740','#ffb165','🏍','STUNT TRACK'],'blockhaven':['#264a35','#c6ec91','▦','VOXEL WORLD'],'bidbound':['#252046','#bfa5ff','◆','AUCTION HOUSE'],'deep-earth':['#29271d','#e3c280','▤','BUNKER 047'],'f1-2026':['#321c29','#ff5c78','🏎','GRAND PRIX']};
+'starforge':['#211044','#b789ff','✦','COSMIC FORGE'],'blackmarket':['#061b27','#39f0cb','▥','MARKET TERMINAL'],'outbreak':['#11251e','#a5d77e','☣','QUARANTINE'],'streetline':['#201329','#ff668d','🏎','NIGHT RACING'],'abyss':['#052237','#41c8f5','🐟','DEEP OCEAN'],'blockworld':['#203a28','#a4e783','▣','CRAFT & BUILD'],'hollowwood':['#091e1b','#80b9a4','♠','HAUNTED FOREST'],'summit':['#19334a','#c5e8ff','▲','SUMMIT ASCENT'],'bench':['#13373a','#7ff3da','▤','REPAIR STATION'],'frontline':['#14232b','#e2bf91','⌖','TACTICAL RANGE'],'tiny-fishing':['#063657','#54dfff','🐟','DEEP WATER'],'donut-clicker':['#542642','#ffb5cc','🍩','THE BAKERY'],'egg-clicker':['#343349','#ffe19c','🥚','THE HATCHERY'],'horizon-drive':['#1a3850','#ffa36a','🏎','OPEN ROAD'],'bonvo-ride':['#164769','#e7f5ff','▲','ALPINE SLOPES'],'garage-kings':['#29303a','#f9b476','🔧','CUSTOM GARAGE'],'yolk-brawl':['#483079','#ffdc8e','🥚','ARENA BRAWL'],'nitro-quarry':['#2d3740','#ffb165','🏍','STUNT TRACK'],'blockhaven':['#264a35','#c6ec91','▦','VOXEL WORLD'],'bidbound':['#252046','#bfa5ff','◆','AUCTION HOUSE'],'deep-earth':['#29271d','#e3c280','▤','BUNKER 047'],'f1-2026':['#321c29','#ff5c78','🏎','GRAND PRIX'],'deepstrike':['#292c40','#ffcf78','⛏','MINING EMPIRE']};
 const [base,accent,symbol,subtitle]=themes[type]||['#171c35','#b4a3ff','✦','ARCADE'];
 let g=c.createLinearGradient(0,0,w,h);g.addColorStop(0,base);g.addColorStop(1,'#050b18');c.fillStyle=g;c.fillRect(0,0,w,h);
 g=c.createRadialGradient(w*.72,h*.45,0,w*.72,h*.45,w*.65);g.addColorStop(0,accent+'88');g.addColorStop(.4,accent+'22');g.addColorStop(1,'transparent');c.fillStyle=g;c.fillRect(0,0,w,h);
@@ -183,7 +183,42 @@ for(let i=0;i<110;i++){c.fillStyle=i%6?'#ffffff25':accent+'bb';c.beginPath();c.a
 c.strokeStyle=accent+'25';c.lineWidth=1;for(let i=-h;i<w+h;i+=40){c.beginPath();c.moveTo(i,0);c.lineTo(i+h,h);c.stroke()}
 const x=w*.70,y=h*.47;
 function ellipse(cx,cy,rx,ry,color){c.fillStyle=color;c.beginPath();c.ellipse(cx,cy,rx,ry,0,0,7);c.fill()}
-if(['streetline','horizon-drive','garage-kings','f1-2026'].includes(type)){
+
+const shape=(pts,color)=>{c.fillStyle=color;c.beginPath();c.moveTo(...pts[0]);for(let i=1;i<pts.length;i++)c.lineTo(...pts[i]);c.closePath();c.fill()};
+const rect=(xx,yy,ww,hh,color)=>{c.fillStyle=color;c.fillRect(xx,yy,ww,hh)};
+const circ=(xx,yy,rr,color)=>{c.fillStyle=color;c.beginPath();c.arc(xx,yy,rr,0,Math.PI*2);c.fill()};
+const line=(pts,color,width=5)=>{c.strokeStyle=color;c.lineWidth=width;c.lineCap='round';c.beginPath();c.moveTo(...pts[0]);for(let i=1;i<pts.length;i++)c.lineTo(...pts[i]);c.stroke()};
+const wheel=(xx,yy,rr)=>{circ(xx,yy,rr,'#0b1020');circ(xx,yy,rr*.63,'#b4c5d4');circ(xx,yy,rr*.34,'#263a4c')};
+const vehicle=(xx,yy,col,kind)=>{c.save();c.translate(xx,yy);if(kind==='bike'){wheel(-120,75,48);wheel(110,75,48);line([[-120,75],[-45,-10],[10,75],[110,75],[-5,-55],[-45,-10]],col,12);line([[-10,-55],[75,-72]],'#e8e9ec',10);line([[-45,-10],[-55,-75]],'#fff',9)}else{shape([[-185,42],[-167,-10],[-85,-28],[-40,-83],[66,-83],[124,-22],[178,5],[192,42]],col);rect(-31,-75,94,37,'#192d40');wheel(-120,43,38);wheel(132,43,38);rect(143,8,28,12,'#fff5c5')}c.restore()};
+const special=()=>{
+switch(type){
+case 'deepstrike':
+rect(0,h*.66,w,h*.34,'#292e3d');for(let i=0;i<7;i++){const xx=130+i*115,yy=340+(i%3)*32;shape([[xx,yy-90],[xx+50,yy-45],[xx+38,yy+22],[xx-28,yy+38],[xx-46,yy-30]],['#59d4e5','#eeb96d','#ab84ed'][i%3])}line([[w*.32,490],[w*.65,220]],'#a97442',27);line([[w*.49,265],[w*.82,175]],'#c7d8e0',27);return true;
+case 'garage-kings':vehicle(710,355,'#f19c5d');rect(60,420,310,24,'#394b60');rect(70,295,85,125,'#677e8b');rect(240,310,85,110,'#677e8b');return true;
+case 'streetline':for(let i=0;i<12;i++)rect(i*100,180+(i%4)*35,60,230,'#11172c');line([[0,560],[540,330],[1020,560]],'#f4d377',13);vehicle(695,365,'#fa5989');return true;
+case 'horizon-drive':shape([[0,385],[240,230],[390,340],[600,190],[1020,400],[1020,630],[0,630]],'#3b795e');shape([[330,630],[560,350],[710,350],[1000,630]],'#354452');line([[550,630],[615,365]],'#ffe1a5',11);vehicle(700,390,'#f49a61');return true;
+case 'f1-2026':for(let i=0;i<9;i++)rect(i*120,420,70,95,i%2?'#eeeeee':'#d64d62');vehicle(700,365,'#e33152');rect(570,320,270,13,'#f9e6db');return true;
+case 'nitro-quarry':shape([[0,550],[250,450],[450,505],[680,340],[1020,470],[1020,630],[0,630]],'#bd7d50');vehicle(700,310,'#f7b96b','bike');return true;
+case 'bonvo-ride':shape([[0,560],[260,180],[420,480],[650,100],[1020,560]],'#d9ecf9');shape([[0,630],[360,400],[580,630]],'#7daed3');line([[650,260],[760,390]],'#242e48',15);circ(640,235,23,'#fa835e');return true;
+case 'tiny-fishing':for(let i=0;i<5;i++)line([[0,270+i*75],[500,240+i*75],[1020,270+i*75]],'#67bde255',5);line([[500,50],[660,345]],'#f1e4d0',4);ellipse(710,350,145,65,'#62e4fa');shape([[600,350],[520,290],[520,410]],'#62e4fa');circ(755,330,11,'#132b40');return true;
+case 'abyss':for(let i=0;i<20;i++){let xx=80+i*47,yy=170+(i%4)*85;circ(xx,yy,3+i%5,'#8ddcff99')}shape([[450,100],[750,100],[670,180],[520,180]],'#a9d4e5');line([[600,175],[600,360]],'#d5e5f1',6);ellipse(780,475,170,75,'#20577d');circ(830,455,15,'#8de4ff');return true;
+case 'blockhaven':for(let i=0;i<7;i++){const xx=90+i*145,yy=280+(i%3)*55;rect(xx,yy,110,220,'#6b9d64');rect(xx,yy,110,24,'#b4e77d');rect(xx+26,yy-80,54,80,'#5c7b49')}return true;
+case 'blockworld':for(let i=0;i<5;i++){let xx=230+i*130,yy=230+(i%2)*60;rect(xx,yy,120,120,'#a0764d');rect(xx,yy,120,30,'#87cb6c');rect(xx+20,yy+50,35,45,'#5b4538')}rect(520,390,200,140,'#8ecb77');rect(550,320,140,75,'#6d9e62');return true;
+case 'egg-clicker':for(let i=0;i<5;i++){let xx=350+i*115,yy=400-(i%2)*75;ellipse(xx,yy,50,72,['#ffe0a1','#b6e9ff','#d9b8ff','#ffb8c7','#c5f4a2'][i]);ellipse(xx-14,yy-26,13,20,'#ffffff77')}return true;
+case 'donut-clicker':for(let i=0;i<4;i++){let xx=380+i*145,yy=360+(i%2)*75;circ(xx,yy,77,'#c68a5b');circ(xx,yy,66,['#ff9cbb','#b994f8','#96e2c8','#f5b978'][i]);circ(xx,yy,25,'#42283e');for(let j=0;j<9;j++)rect(xx-42+j*10,yy-22+j%3*16,7,3,'#fff3c2')}return true;
+case 'yolk-brawl':ellipse(680,345,140,175,'#fff1dc');ellipse(680,398,82,77,'#ffcd54');circ(640,305,14,'#303042');circ(725,305,14,'#303042');line([[610,470],[520,530]],'#fff4de',17);line([[760,470],[840,520]],'#fff4de',17);return true;
+case 'summit':shape([[0,630],[350,300],[550,630]],'#536d89');shape([[320,630],[740,90],[1020,630]],'#a7c6df');shape([[580,300],[740,90],[865,300],[765,245],[705,260]],'#f2f9ff');circ(725,305,16,'#ffcb70');return true;
+case 'hollowwood':for(let i=0;i<11;i++){let xx=i*103;rect(xx,140+(i%3)*40,20,450,'#091913');shape([[xx-70,320],[xx+10,60],[xx+100,320]],'#143e33')}circ(670,380,45,'#d5f5b755');line([[670,380],[820,470]],'#c9f3b955',75);return true;
+case 'outbreak':for(let i=0;i<9;i++)rect(i*130,180+(i%3)*45,105,360,'#203d36');for(let i=0;i<4;i++){const xx=500+i*95;circ(xx,345,25,'#9eb79b');rect(xx-17,367,34,110,'#304438')}rect(120,180,250,65,'#d1e3c0');rect(130,190,230,45,'#923c43');return true;
+case 'frontline':rect(160,170,710,330,'#35404a');for(let i=0;i<6;i++)rect(220+i*100,210,70,190,'#182630');circ(700,330,75,'#f0d4ad');circ(700,330,45,'#263b43');circ(700,330,15,'#e96d68');return true;
+case 'bench':rect(450,100,290,470,'#253f4c');rect(470,125,250,415,'#80d4cc');rect(500,170,190,250,'#172c3a');for(let i=0;i<5;i++)rect(520,200+i*38,145,13,'#82e5dc');circ(595,490,18,'#d7e4e5');return true;
+case 'deep-earth':for(let i=0;i<4;i++)rect(110+i*210,160,155,380,'#5d5140');rect(230,260,550,270,'#273b40');rect(280,295,450,40,'#9bc8b4');for(let i=0;i<5;i++)circ(340+i*80,425,23,'#f5cb78');return true;
+case 'blackmarket':rect(380,140,490,330,'#112e3b');for(let i=0;i<5;i++)rect(420+i*80,200,40,220,'#234957');line([[415,400],[490,350],[550,375],[620,245],[730,200],[810,130]],'#62ffce',13);return true;
+case 'starforge':for(let i=0;i<12;i++){const a=i*Math.PI/6;line([[710+Math.cos(a)*90,335+Math.sin(a)*90],[710+Math.cos(a)*170,335+Math.sin(a)*170]],'#b98aff',10)}circ(710,335,94,'#7650cf');circ(710,335,54,'#edceff');return true;
+default:return false;
+}};
+
+if(special()){}else if(['streetline','horizon-drive','garage-kings','f1-2026'].includes(type)){
 c.fillStyle='#0a1120';c.beginPath();c.moveTo(0,h);c.lineTo(w*.45,h*.52);c.lineTo(w*.68,h*.52);c.lineTo(w,h);c.fill();
 c.save();c.translate(x,y+65);c.shadowColor=accent;c.shadowBlur=50;c.fillStyle=accent;c.beginPath();c.moveTo(-180,42);c.lineTo(-158,-10);c.lineTo(-80,-24);c.lineTo(-32,-72);c.lineTo(52,-72);c.lineTo(120,-19);c.lineTo(184,5);c.lineTo(195,42);c.closePath();c.fill();c.shadowBlur=0;c.fillStyle='#142637';c.fillRect(-32,-64,83,37);for(let xx of [-126,135]){ellipse(xx,46,34,34,'#070b13');ellipse(xx,46,20,20,'#a7b4c0')}c.restore()
 }else if(['abyss','tiny-fishing'].includes(type)){for(let i=0;i<10;i++){c.strokeStyle=accent+'30';c.beginPath();c.moveTo(0,130+i*34);c.quadraticCurveTo(w*.5,90+i*35,w,130+i*34);c.stroke()}ellipse(x,y,155,72,accent);c.fillStyle=accent;c.beginPath();c.moveTo(x-145,y);c.lineTo(x-215,y-76);c.lineTo(x-215,y+76);c.fill();ellipse(x+70,y-16,13,13,'#fff');ellipse(x+73,y-16,6,6,'#0b2030')
