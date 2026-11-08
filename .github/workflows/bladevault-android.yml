@@ -1,0 +1,29 @@
+name: Build Blade Vault APK
+on:
+  push:
+    branches: [bladevault-android-build]
+    paths:
+      - 'bladevault-android/**'
+      - '.github/workflows/bladevault-android.yml'
+  workflow_dispatch:
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: bladevault-android
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+      - name: Build debug APK
+        run: gradle --no-daemon :app:assembleDebug
+      - uses: actions/upload-artifact@v4
+        with:
+          name: BladeVault-Android-APK
+          path: bladevault-android/app/build/outputs/apk/debug/app-debug.apk
